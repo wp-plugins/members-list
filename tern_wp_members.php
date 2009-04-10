@@ -307,7 +307,7 @@ class tern_members {
 		echo '</ul></div>';
 	}
 	function sortby() {
-		$a = array('Last Name'=>'last_name','First Name'=>'first_name','Registration Date'=>'user_registered','Employer'=>'employer','Email'=>'user_email');
+		$a = array('Last Name'=>'last_name','First Name'=>'first_name','Registration Date'=>'user_registered','Email'=>'user_email');
 		//
 		foreach($a as $k => $v) {
 			unset($c);
