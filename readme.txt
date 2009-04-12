@@ -1,10 +1,10 @@
 === Members List Plugin ===
 Contributors: mpraetzel
 Donate link: http://www.ternstyle.us/donate
-Tags: members, members list
+Tags: members, members list, users, users list
 Requires at least: 2.7
 Tested up to: 2.7.1
-Stable tag: 1.5
+Stable tag: 1.6
 
 The Members Plugin allows you to create a post on your wordpress blog that lists all your wordpress members.
 

@@ -25,6 +25,17 @@ class selectClass {
 		$os = $this->compileSelect($j,$i,$n,$t,$c,$sv,$o,$m);
 		return $os;
 	}
+	//array, id, name, title, class, select value, selected value, javascript, multiple?
+	function selectPaired($a,$i='',$n='',$t='',$c='',$sv='',$f=array(),$j='',$m=false) {
+		$a = is_array($a) ? $a : array();
+		foreach($a as $k => $v) {
+			$s = in_array($v,$f) ? ' selected ' : '';
+			$k = empty($k) ? $v : $k;
+			$o .= '<option value="' . $v . '"' . $s . '>' . $k . '</option>';
+		}
+		$os = $this->compileSelect($j,$i,$n,$t,$c,$sv,$o,$m);
+		return $os;
+	}
 	//array, value key, value, id, name, title, class, select value, selected value, javascript, multiple?
 	function selectMulti($a,$vk,$v,$i='',$n='',$t='',$c='',$sv='',$f=array(),$j='',$m=false) {
 		$a = is_array($a) ? $a : array();

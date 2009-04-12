@@ -34,8 +34,8 @@ $tern_wp_members_defaults = array('limit'=>10,'meta'=>'','url'=>get_bloginfo('ho
 //////////////////////////////////**                           **///////////////////////////////////
 //                                **                           **                                 //
 //                                *******************************                                 //
-require_once(ABSPATH.'/wp-content/plugins/tern_wp_members/ternstyle/class/forms.php');
-require_once(ABSPATH.'/wp-content/plugins/tern_wp_members/ternstyle/class/select.php');
+require_once(ABSPATH.'wp-content/plugins/tern_wp_members/ternstyle/class/forms.php');
+require_once(ABSPATH.'wp-content/plugins/tern_wp_members/ternstyle/class/select.php');
 //                                *******************************                                 //
 //________________________________** ADD EVENTS                **_________________________________//
 //////////////////////////////////**                           **///////////////////////////////////
@@ -146,6 +146,7 @@ class tern_members {
 	var $order = 'user_nicename';
 	var $meta_fields = array('');
 	var $fields = array('user_nicename','user_email','user_url');
+	var $all_fields = array('Last Name'=>'last_name','First Name'=>'first_name','User Name'=>'user_nicename','Description'=>'description','Email'=>'user_email','URL'=>'user_url');
 	var $num = 10;
 	
 	//functions
@@ -197,13 +198,22 @@ class tern_members {
 		global $wpdb;
 		$q = urldecode($_GET['query']);
 		$t = $_GET['type'];
+		$b = $_REQUEST['by'];
 		if(empty($q)) {
 			$this->r = $wpdb->get_col("select ID from $wpdb->users");
+		}
+		elseif(!empty($b)) {
+			if(in_array($b,$this->fields)) {
+				$this->r = $wpdb->get_col("select ID from $wpdb->users where instr($b,'$q') != 0");
+			}
+			else {
+				$this->r = $wpdb->get_col("select user_id from $wpdb->usermeta where meta_key = '$b' and instr(meta_value,'$q') != 0");
+			}
 		}
 		else {
 			foreach($this->meta_fields as $v) {
 				if($t != 'alpha') {
-					$uq .= "select user_id from $wpdb->usermeta where meta_key = '" . $v . "' and instr(meta_value,'$q') != 0 union ";
+					$uq .= "select user_id from $wpdb->usermeta where meta_key = '".$v."' and instr(meta_value,'$q') != 0 union ";
 				}
 			}
 			if($t == 'alpha') {
@@ -214,8 +224,7 @@ class tern_members {
 						"select user_id from $wpdb->usermeta where meta_key = 'last_name' and STRCMP(meta_value,'$q') = 0 union " .
 						"select user_id from $wpdb->usermeta where meta_key = 'description' and instr(meta_value,'$q') != 0";
 			}
-			//echo $uq;
-			$this->r = $wpdb->get_col($uq);
+			$r = $wpdb->get_col($uq);
 			//
 			unset($uq);
 			foreach($this->fields as $v) {
@@ -223,7 +232,9 @@ class tern_members {
 					$uq .= empty($uq) ? "select ID from $wpdb->users where instr(".$v.",'$q') != 0" : " union select ID from $wpdb->users where instr(".$v.",'$q') != 0";
 				}
 			}
-			$this->r = array_merge($this->r,$wpdb->get_col($uq));
+			$r = array_merge($r,$wpdb->get_col($uq));
+			//
+			$this->r = array_values(array_unique($r));
 		}
 		unset($this->a);
 		foreach($this->r as $v) {
@@ -231,7 +242,6 @@ class tern_members {
 				$this->a[] = get_userdata($v);
 			}
 		}
-		//$this->a = $this->sortMulti($this->a,'last_name','str','asc');
 		$s = empty($_GET['sort']) ? 'last_name' : $_GET['sort'];
 		$o = empty($_GET['order']) ? 'asc' : $_GET['order'];
 		$this->a = $this->sortMulti($this->a,$s,'str',$o);
@@ -253,6 +263,7 @@ class tern_members {
 	}
 	function pagination() {
 		$q = $_GET['query'];
+		$b = $_GET['by'];
 		$t = $_GET['type'];
 		$this->scope();
 		if($this->n > 1) {
@@ -268,15 +279,15 @@ class tern_members {
 			}
 			//
 			for($i=$s;$i<=$e;$i++) {
-				$h = $this->url.'&page='.($i).'&query='.$q.'&type='.$t.'&sort='.$_GET['sort'].'&order='.$_GET['order'];
+				$h = $this->url.'&page='.($i).'&query='.$q.'&by='.$b.'&type='.$t.'&sort='.$_GET['sort'].'&order='.$_GET['order'];
 				$c = intval($this->s+1) == $i ? ' class="tern_members_pagination_current"' : '';
 				$r .= '<li'.$c.'><a href="' . $h . '">' . $i . '</a></li>';
 			}
 			if($this->s > 0) {
-				$r = '<li><a href="'.$this->url.'&page='.intval($this->s).'&query='.$q.'&type='.$t.'&sort='.$_GET['sort'].'&order='.$_GET['order'].'">Previous</a></li>'.$r;
+				$r = '<li><a href="'.$this->url.'&page='.intval($this->s).'&query='.$q.'&by='.$b.'&type='.$t.'&sort='.$_GET['sort'].'&order='.$_GET['order'].'">Previous</a></li>'.$r;
 			}
 			if(count($this->a) > (($this->s*$this->num)+$this->num)) {
-				$r .= '<li><a href="'.$this->url.'&page='.intval($this->s+2).'&query='.$q.'&type='.$t.'&sort='.$_GET['sort'].'&order='.$_GET['order'].'">Next</a></li>';
+				$r .= '<li><a href="'.$this->url.'&page='.intval($this->s+2).'&query='.$q.'&by='.$b.'&type='.$t.'&sort='.$_GET['sort'].'&order='.$_GET['order'].'">Next</a></li>';
 			}
 			$r = '<ul class="tern_members_pagination tern_wp_pagination">' . $r . '</ul>';
 		}
@@ -288,12 +299,15 @@ class tern_members {
 		echo '<div id="tern_members_pagination"><p>Now viewing <b>' . (($this->s*$this->num)+1) . '</b> through <b>' . $this->e . '</b> of <b>'.count($this->a).'</b> members found'.$m.'</p>' . $r.'</div>';
 	}
 	function search() {
+		global $getOPTS;
 		$a = array('a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z');
+		$o = array_merge($this->all_fields,$this->meta_fields);
 		echo
 		'<div id="tern_members_search">
 		<form method="get" action="'.$this->url.'">
-			Search Our Members:
-			<input type="text" name="query" id="" />
+			<label for="query">Search Our Members:</label>
+			<input type="text" id="query" name="query" id="" />
+			by '.$getOPTS->selectPaired($o,'by','by','','','All Fields',array($_REQUEST['by'])).' 
 			<input type="submit" value="Submit" />
 		</form>
 		Search alphabetically:<ul class="tern_members_pagination">';
@@ -318,7 +332,7 @@ class tern_members {
 			if($_GET['sort'] == $v) {
 				$c = $o == 'asc' ? ' class="tern_members_sorted_u" ' : ' class="tern_members_sorted_d" ';
 			}
-			$r .= '<li'.$c.'><a href="'.$this->url.'&query='.urldecode($_GET['query']).'&type='.$_GET['type'].'&sort='.$v.'&order='.$o.'">'.$k.'</a></li>';
+			$r .= '<li'.$c.'><a href="'.$this->url.'&query='.urldecode($_GET['query']).'&by='.$_GET['by'].'&type='.$_GET['type'].'&sort='.$v.'&order='.$o.'">'.$k.'</a></li>';
 		}
 		echo '<div id="tern_members_sort"><label>Sort by:</label><ul>'.$r.'</ul></div>';
 	}
