@@ -36,6 +36,7 @@ $tern_wp_members_defaults = array('limit'=>10,'meta'=>'','url'=>get_bloginfo('ho
 //                                *******************************                                 //
 require_once(ABSPATH.'wp-content/plugins/tern_wp_members/ternstyle/class/forms.php');
 require_once(ABSPATH.'wp-content/plugins/tern_wp_members/ternstyle/class/select.php');
+require_once(ABSPATH.'wp-content/plugins/tern_wp_members/ternstyle/class/arrays.php');
 //                                *******************************                                 //
 //________________________________** ADD EVENTS                **_________________________________//
 //////////////////////////////////**                           **///////////////////////////////////
@@ -151,10 +152,12 @@ class tern_members {
 	
 	//functions
 	function tern_members() {
+		global $getFIX;
 		$o = get_option('tern_wp_members');
 		if(!empty($o)) {
 			$this->num = $o['limit'];
 			$this->meta_fields = explode(',',$o['meta']);
+			$this->meta_fields = $getFIX->removeEmptyValues($this->meta_fields);
 		}
 		$this->url = strpos($this->url,'?') !== false ? $o['url'] : $o['url'].'?';
 	}
