@@ -4,7 +4,7 @@ Plugin Name: Members List
 Plugin URI: http://www.ternstyle.us/
 Description: List your members with pagination and search capabilities.
 Author: Matthew Praetzel
-Version: 1.6
+Version: 1.7
 Author URI: http://www.ternstyle.us/
 Licensing : http://www.ternstyle.us/readme.html
 */
@@ -17,6 +17,8 @@ Licensing : http://www.ternstyle.us/readme.html
 ////		2) search through members
 ////	Account:
 ////		Added on January 29th 2009
+////	Version:
+////		1.7
 ////
 ////	Written by Matthew Praetzel. Copyright (c) 2009 Matthew Praetzel.
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -34,9 +36,9 @@ $tern_wp_members_defaults = array('limit'=>10,'meta'=>'','url'=>get_bloginfo('ho
 //////////////////////////////////**                           **///////////////////////////////////
 //                                **                           **                                 //
 //                                *******************************                                 //
-require_once(ABSPATH.'wp-content/plugins/tern_wp_members/ternstyle/class/forms.php');
-require_once(ABSPATH.'wp-content/plugins/tern_wp_members/ternstyle/class/select.php');
-require_once(ABSPATH.'wp-content/plugins/tern_wp_members/ternstyle/class/arrays.php');
+require_once(ABSPATH.'wp-content/plugins/members-list/ternstyle/class/forms.php');
+require_once(ABSPATH.'wp-content/plugins/members-list/ternstyle/class/select.php');
+require_once(ABSPATH.'wp-content/plugins/members-list/ternstyle/class/arrays.php');
 //                                *******************************                                 //
 //________________________________** ADD EVENTS                **_________________________________//
 //////////////////////////////////**                           **///////////////////////////////////
@@ -50,7 +52,7 @@ add_action('admin_menu','tern_wp_members_menu');
 //                                **                           **                                 //
 //                                *******************************                                 //
 function tern_wp_members_scripts() {
-	echo '<link rel="stylesheet" href="'.get_bloginfo('home').'/wp-content/plugins/tern_wp_members/tern_wp_members.css" type="text/css" media="all" />' . "\n";
+	echo '<link rel="stylesheet" href="'.get_bloginfo('home').'/wp-content/plugins/members-list/tern_wp_members.css" type="text/css" media="all" />' . "\n";
 }
 //                                *******************************                                 //
 //________________________________** MENUS                     **_________________________________//

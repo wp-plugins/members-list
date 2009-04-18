@@ -25,5 +25,5 @@
 #tern_members_sort ul, #tern_members_sort li { display:block;float:left;margin:0px;padding:0px;list-type:none; }
 #tern_members_sort ul { margin-bottom:20px; }
 #tern_members_sort li { padding:0px 10px; }
-#tern_members_sort li.tern_members_sorted_u a { padding-left:20px;background:transparent url(/wp-content/plugins/tern_wp_members/images/up.gif) no-repeat center left;color:#333; }
-#tern_members_sort li.tern_members_sorted_d a { padding-left:20px;background:transparent url(/wp-content/plugins/tern_wp_members/images/down.gif) no-repeat center left;color:#333; }
+#tern_members_sort li.tern_members_sorted_u a { padding-left:20px;background:transparent url(/wp-content/plugins/members-list/images/up.gif) no-repeat center left;color:#333; }
+#tern_members_sort li.tern_members_sorted_d a { padding-left:20px;background:transparent url(/wp-content/plugins/members-list/images/down.gif) no-repeat center left;color:#333; }

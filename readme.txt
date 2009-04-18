@@ -4,7 +4,7 @@ Donate link: http://www.ternstyle.us/donate
 Tags: members, members list, users, users list
 Requires at least: 2.7
 Tested up to: 2.7.1
-Stable tag: 1.6
+Stable tag: 1.7
 
 The Members Plugin allows you to create a post on your wordpress blog that lists all your wordpress members.
 
@@ -14,7 +14,7 @@ The Members Plugin allows you to create a post on your wordpress blog that lists
 
 == Installation ==
 
-* Upload `tern_wp_members` to the `/wp-content/plugins/` directory
+* Upload the `members-list` folder to the `/wp-content/plugins/` directory
 * Activate the plugin through the 'Plugins' menu in WordPress
 * Place `<?php $members = new tern_members;$members->members(array('search'=>true,'pagination'=>true,'sort'=>true));?>` in your templates
 
