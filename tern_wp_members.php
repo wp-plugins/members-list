@@ -4,7 +4,7 @@ Plugin Name: Members List
 Plugin URI: http://www.ternstyle.us/
 Description: List your members with pagination and search capabilities.
 Author: Matthew Praetzel
-Version: 1.7
+Version: 1.8
 Author URI: http://www.ternstyle.us/
 Licensing : http://www.ternstyle.us/readme.html
 */
@@ -18,7 +18,7 @@ Licensing : http://www.ternstyle.us/readme.html
 ////	Account:
 ////		Added on January 29th 2009
 ////	Version:
-////		1.7
+////		1.8
 ////
 ////	Written by Matthew Praetzel. Copyright (c) 2009 Matthew Praetzel.
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -30,7 +30,7 @@ Licensing : http://www.ternstyle.us/readme.html
 //////////////////////////////////**                           **///////////////////////////////////
 //                                **                           **                                 //
 //                                *******************************                                 //
-$tern_wp_members_defaults = array('limit'=>10,'meta'=>'','url'=>get_bloginfo('home').'/members');
+$tern_wp_members_defaults = array('limit'=>10,'meta'=>'','url'=>get_bloginfo('home').'/members','gravatars'=>1);
 //                                *******************************                                 //
 //________________________________** INCLUDES                  **_________________________________//
 //////////////////////////////////**                           **///////////////////////////////////
@@ -76,18 +76,12 @@ function tern_wp_members_options() {
 		$f = new parseForm('post','_wp_http_referer,_wpnonce,action,submit');
 		$o = get_option('tern_wp_members');
 		if(empty($o)) {
-			if(!add_option('tern_wp_members',$f->a)) {
-				$tern_wp_msg = 'There was an error while attempting to update your settings. Please try again.';
-			}
+			add_option('tern_wp_members',$f->a);
 		}
 		else {
-			if(!update_option('tern_wp_members',$f->a)) {
-				$tern_wp_msg = 'There was an error while attempting to update your settings. Please try again.';
-			}
+			update_option('tern_wp_members',$f->a);
 		}
-		if(empty($tern_wp_msg)) {
-			$tern_wp_msg = 'You have successfully updated your settings.';
-		}
+		$tern_wp_msg = empty($tern_wp_msg) ? 'You have successfully updated your settings.' : $tern_wp_msg;
 	}
 	//
 	$o = get_option('tern_wp_members');
@@ -100,7 +94,7 @@ function tern_wp_members_options() {
 	<div id="icon-options-general" class="icon32"><br /></div>
 	<h2>Members Settings</h2>
 	<?php
-		if(!empty($tern_wp_sponsor_msg)) {
+		if(!empty($tern_wp_msg)) {
 			echo '<div id="message" class="updated fade"><p>'.$tern_wp_msg.'</p></div>';
 		}
 	?>
@@ -127,6 +121,13 @@ function tern_wp_members_options() {
 				<td>
 					<textarea name="meta" style="width:100%;"><?=$o['meta'];?></textarea><br />
 					<span class="setting-description">e.g. occupation,employer,department,city,state,zip,country</span>
+				</td>
+			</tr>
+			<tr valign="top">
+				<th scope="row"><label for="gravatars">Use gravatars?</label></th>
+				<td>
+					<input type="radio" name="gravatars" value="1" <?php if($o['gravatars']) { echo 'checked'; } ?> /> yes
+					<input type="radio" name="gravatars" value="0" <?php if(!$o['gravatars']) { echo 'checked'; } ?> /> no
 				</td>
 			</tr>
 		</table>
@@ -166,6 +167,7 @@ class tern_members {
 	function members($a) {
 		$this->scope();
 		$this->query();
+		$o = get_option('tern_wp_members');
 		//
 		if($a['search']) {
 			$this->search();
@@ -186,12 +188,16 @@ class tern_members {
 			$n = empty($u->first_name) ? $u->display_name : $n;
 			if(!empty($n)) {
 				//edit this code to suit how you'd like each user to be displayed in HTML
-				echo '<li>
-						<h3 id="tern_wp_member_'.$u->ID.'">
-							<a href="'.get_bloginfo('url').'/?author='.$u->ID.'">'.$n.'</a>
-						</h3>
-						<div class="tern_wp_member_info">
-							<a href="mailto:'.$u->user_email.'">'.$u->user_email.'</a><br />
+				echo '<li>';
+				if($o['gravatars']) {
+					echo '<a class="tern_wp_member_gravatar" href="'.get_bloginfo('url').'/?author='.$u->ID.'">'.get_avatar($u->ID,60).'</a>';
+				}
+				echo		
+						'<div class="tern_wp_member_info">
+							<h3 id="tern_wp_member_'.$u->ID.'">
+								<a href="'.get_bloginfo('url').'/?author='.$u->ID.'">'.$n.'</a>
+							</h3>
+							<a href="mailto:'.$u->user_email.'">'.$u->user_email.'</a>
 							<a href="'.$u->user_url.'">'.$u->user_url.'</a>
 						</div>
 					</li>';
@@ -301,7 +307,8 @@ class tern_members {
 		if($t == 'alpha') {
 			$m = ' whose last names begin with the letter "'.strtoupper($q).'".';
 		}
-		echo '<div id="tern_members_pagination"><p>Now viewing <b>' . (($this->s*$this->num)+1) . '</b> through <b>' . $this->e . '</b> of <b>'.count($this->a).'</b> members found'.$m.'</p>' . $r.'</div>';
+		$v = count($this->a) > 0 ? (($this->s*$this->num)+1) : '0';
+		echo '<div id="tern_members_pagination"><p>Now viewing <b>' . $v . '</b> through <b>' . $this->e . '</b> of <b>'.count($this->a).'</b> members found'.$m.'</p>' . $r.'</div>';
 	}
 	function search() {
 		global $getOPTS;
@@ -323,7 +330,7 @@ class tern_members {
 			}
 			echo '<li><a '.$c.' href="'.$this->url.'&page=1&query='.$v.'&type=alpha">'.strtoupper($v).'</a></li>';
 		}
-		echo '</ul></div>';
+		echo '</ul><br /><span>(by last name)</span></div>';
 	}
 	function sortby() {
 		$a = array('Last Name'=>'last_name','First Name'=>'first_name','Registration Date'=>'user_registered','Email'=>'user_email');
