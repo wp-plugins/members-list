@@ -14,6 +14,8 @@
 
 /****************************************Commence Script*******************************************/
 
+if(!class_exists('selectClass')) {
+//
 class selectClass {
 	//array, id, name, title, class, select value, selected value, javascript, multiple?
 	function select($a,$i='',$n='',$t='',$c='',$sv='',$f=array(),$j='',$m=false) {
@@ -141,8 +143,9 @@ class selectClass {
 	}
 
 }
-
 $getOPTS = new selectClass;
+//
+}
 
 /****************************************Terminate Script******************************************/
 ?>

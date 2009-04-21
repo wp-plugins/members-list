@@ -12,6 +12,8 @@
 
 /****************************************Commence Script*******************************************/
 
+if(!class_exists('arrayFixes')) {
+//
 class arrayFixes {
 
 	function sortMulti($a,$c,$t,$o,$p=false) {
@@ -192,8 +194,9 @@ class arrayFixes {
 	}
 
 }
-
 $getFIX = new arrayFixes;
+//
+}
 
 /****************************************Terminate Script******************************************/
 ?>
