@@ -36,7 +36,7 @@ $tern_wp_members_defaults = array('limit'=>10,'meta'=>'','url'=>get_bloginfo('ho
 //////////////////////////////////**                           **///////////////////////////////////
 //                                **                           **                                 //
 //                                *******************************                                 //
-require_once(ABSPATH.'wp-content/plugins/get-login/ternstyle/class/wordpress.php');
+require_once(ABSPATH.'wp-content/plugins/members-list/ternstyle/class/wordpress.php');
 require_once(ABSPATH.'wp-content/plugins/members-list/ternstyle/class/forms.php');
 require_once(ABSPATH.'wp-content/plugins/members-list/ternstyle/class/select.php');
 require_once(ABSPATH.'wp-content/plugins/members-list/ternstyle/class/arrays.php');
