@@ -1,12 +1,12 @@
 <?php
 /*
 Plugin Name: Members List
-Plugin URI: http://www.ternstyle.us/
+Plugin URI: http://www.ternstyle.us/products/plugins/wordpress/wordpress-members-plugin
 Description: List your members with pagination and search capabilities.
 Author: Matthew Praetzel
-Version: 1.8
+Version: 1.8.2
 Author URI: http://www.ternstyle.us/
-Licensing : http://www.ternstyle.us/readme.html
+Licensing : http://www.ternstyle.us/license.html
 */
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -18,7 +18,7 @@ Licensing : http://www.ternstyle.us/readme.html
 ////	Account:
 ////		Added on January 29th 2009
 ////	Version:
-////		1.8
+////		1.8.2
 ////
 ////	Written by Matthew Praetzel. Copyright (c) 2009 Matthew Praetzel.
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -36,6 +36,7 @@ $tern_wp_members_defaults = array('limit'=>10,'meta'=>'','url'=>get_bloginfo('ho
 //////////////////////////////////**                           **///////////////////////////////////
 //                                **                           **                                 //
 //                                *******************************                                 //
+require_once(ABSPATH.'wp-content/plugins/get-login/ternstyle/class/wordpress.php');
 require_once(ABSPATH.'wp-content/plugins/members-list/ternstyle/class/forms.php');
 require_once(ABSPATH.'wp-content/plugins/members-list/ternstyle/class/select.php');
 require_once(ABSPATH.'wp-content/plugins/members-list/ternstyle/class/arrays.php');
@@ -70,24 +71,12 @@ function tern_wp_members_menu() {
 //                                **                           **                                 //
 //                                *******************************                                 //
 function tern_wp_members_options() {
-	global $getOPTS,$tern_wp_msg,$tern_wp_members_defaults;
-	//
+	global $getWP,$getOPTS,$tern_wp_msg,$tern_wp_members_defaults;
+	$o = $getWP->getOption('tern_wp_members',$tern_wp_members_defaults);
 	if(wp_verify_nonce($_REQUEST['_wpnonce'],'tern_wp_members_nonce') and $_REQUEST['action'] == 'update') {
 		$f = new parseForm('post','_wp_http_referer,_wpnonce,action,submit');
-		$o = get_option('tern_wp_members');
-		if(empty($o)) {
-			add_option('tern_wp_members',$f->a);
-		}
-		else {
-			update_option('tern_wp_members',$f->a);
-		}
+		$o = $getWP->getOption('tern_wp_members',$f->a,true);
 		$tern_wp_msg = empty($tern_wp_msg) ? 'You have successfully updated your settings.' : $tern_wp_msg;
-	}
-	//
-	$o = get_option('tern_wp_members');
-	if(empty($o)) {
-		add_option('tern_wp_members',$tern_wp_members_defaults);
-		$o = get_option('tern_wp_members');
 	}
 ?>
 <div class="wrap">
@@ -299,7 +288,11 @@ class tern_members {
 			}
 			if(count($this->a) > (($this->s*$this->num)+$this->num)) {
 				$r .= '<li><a href="'.$this->url.'&page='.intval($this->s+2).'&query='.$q.'&by='.$b.'&type='.$t.'&sort='.$_GET['sort'].'&order='.$_GET['order'].'">Next</a></li>';
+				$r .= '<li><a href="'.$this->url.'&page='.$e.'&query='.$q.'&by='.$b.'&type='.$t.'&sort='.$_GET['sort'].'&order='.$_GET['order'].'">Last</a></li>';
 			}
+			//
+			$r = $this->s > 0 ? '<li><a href="'.$this->url.'&page=1&query='.$q.'&by='.$b.'&type='.$t.'&sort='.$_GET['sort'].'&order='.$_GET['order'].'">First</a></li>'.$r : $r;
+			//
 			$r = '<ul class="tern_members_pagination tern_wp_pagination">' . $r . '</ul>';
 		}
 		//
