@@ -4,7 +4,7 @@ Plugin Name: Members List
 Plugin URI: http://www.ternstyle.us/products/plugins/wordpress/wordpress-members-plugin
 Description: List your members with pagination and search capabilities.
 Author: Matthew Praetzel
-Version: 1.8.2
+Version: 2.0
 Author URI: http://www.ternstyle.us/
 Licensing : http://www.ternstyle.us/license.html
 */
@@ -18,7 +18,7 @@ Licensing : http://www.ternstyle.us/license.html
 ////	Account:
 ////		Added on January 29th 2009
 ////	Version:
-////		1.8.2
+////		2.0
 ////
 ////	Written by Matthew Praetzel. Copyright (c) 2009 Matthew Praetzel.
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -30,7 +30,7 @@ Licensing : http://www.ternstyle.us/license.html
 //////////////////////////////////**                           **///////////////////////////////////
 //                                **                           **                                 //
 //                                *******************************                                 //
-$tern_wp_members_defaults = array('limit'=>10,'meta'=>'','url'=>get_bloginfo('home').'/members','gravatars'=>1);
+$tern_wp_members_defaults = array('limit'=>10,'meta'=>'','url'=>get_bloginfo('home').'/members','gravatars'=>1,'hidden'=>array());
 //                                *******************************                                 //
 //________________________________** INCLUDES                  **_________________________________//
 //////////////////////////////////**                           **///////////////////////////////////
@@ -62,7 +62,9 @@ function tern_wp_members_scripts() {
 //                                *******************************                                 //
 function tern_wp_members_menu() {
 	if(function_exists('add_menu_page')) {
-		add_options_page('Members Options','Members Plugin',10,__FILE__,'tern_wp_members_options');
+		add_menu_page('Members List','Members List',10,__FILE__,'tern_wp_members_options');
+		add_submenu_page(__FILE__,'Members List','Settings',10,__FILE__,'tern_wp_members_options');
+		add_submenu_page(__FILE__,'Edit Members','Edit Members',10,'Edit Members List','tern_wp_members_list');
 	}
 }
 //                                *******************************                                 //
@@ -126,6 +128,174 @@ function tern_wp_members_options() {
 		<input type="hidden" name="_wp_http_referer" value="<?php wp_get_referer(); ?>" />
 	</form>
 </div>
+<?php
+}
+
+function tern_wp_members_list() {
+	global $wp_roles,$getWP,$tern_wp_msg,$tern_wp_members_defaults;
+	//save settings
+	$o = $getWP->getOption('tern_wp_members',$tern_wp_members_defaults);
+	$a = empty($_REQUEST['action']) ? $_REQUEST['action2'] : $_REQUEST['action'];
+	if(wp_verify_nonce($_REQUEST['_wpnonce'],'tern_wp_members_nonce') and !empty($a)) {
+		$r = array();
+		$o['hidden'] = is_array($o['hidden']) ? $o['hidden'] : array();
+		foreach($_REQUEST['users'] as $v) {
+			if($a == 'show' and in_array($v,$o['hidden'])) {
+				array_splice($o['hidden'],array_search($v,$o['hidden']),1);
+			}
+			elseif($a == 'hide' and !in_array($v,$o['hidden'])) {
+				$o['hidden'][] = $v;
+			}
+		}
+		$o = $getWP->getOption('tern_wp_members',$o,true);
+		$tern_wp_msg = empty($tern_wp_msg) ? 'You have successfully updated your settings.' : $tern_wp_msg;
+	}
+	//compile list
+	$l = new tern_members();
+	$_GET['order'] = 'desc';
+	$m = $l->query();
+?>
+	<div class="wrap">
+		<div id="icon-users" class="icon32"><br /></div>
+		<h2>Members List</h2>
+		<p>Here you are able to select which of your members you'd like to show or hide in your members list. By default all members are showm.</p>
+		<?php
+			if(!empty($tern_wp_msg)) {
+				echo '<div id="message" class="updated fade"><p>'.$tern_wp_msg.'</p></div>';
+			}
+		?>
+		<div class="filter">
+			<form id="list-filter" action="" method="get">
+				<ul class="subsubsub">
+					<?php
+						$l = array();
+						$a = array();
+						$u = get_users_of_blog();
+						$t = count($u);
+						foreach((array) $u as $c) {
+							$d = unserialize($c->meta_value);
+							foreach((array) $d as $e => $v) {
+								if ( !isset($a[$e]) )
+									$a[$e] = 0;
+								$a[$e]++;
+							}
+						}
+						unset($u);
+						$current_role = false;
+						$class = empty($role) ? ' class="current"' : '';
+						$l[] = "<li><a href='admin.php?page=Edit%20Members%20List'$class>".sprintf(__ngettext('All<span class="count">(%s)</span>','All <span class="count">(%s)</span>',$t),number_format_i18n($t)).'</a>';
+						foreach($wp_roles->get_names() as $s => $name) {
+							if (!isset($a[$s]))
+								continue;
+							$class = '';
+							if ($s == $role) {
+								$current_role = $role;
+								$class = ' class="current"';
+							}
+							$name = translate_with_context($name);
+							$name = sprintf( _c('%1$s <span class="count">(%2$s)</span>|user role with count'),$name,$a[$s]);
+							$l[] = "<li><a href='admin.php?page=Edit%20Members%20List&role=$s'$class>$name</a>";
+						}
+						echo implode( " |</li>\n", $l) . '</li>';
+						unset($l);
+					?>
+				</ul>
+			</form>
+		</div>
+		<form class="search-form" action="" method="get">
+			<p class="search-box">
+				<label class="hidden" for="user-search-input">Search Users:</label>
+				<input type="text" class="search-input" id="user-search-input" name="query" value="" />
+				<input type="hidden" id="page" name="page" value="Edit Members List" />
+				<input type="submit" value="Search Users" class="button" />
+			</p>
+		</form>
+		<form id="posts-filter" action="" method="get">
+			<div class="tablenav">
+				<div class="alignleft actions">
+					<select name="action">
+						<option value="" selected="selected">Bulk Actions</option>
+						<option value="show">Show</option>
+						<option value="hide">Hide</option>
+					</select>
+					<input type="submit" value="Apply" name="doaction" id="doaction" class="button-secondary action" />
+				</div>
+				<br class="clear" />
+			</div>
+			<table class="widefat fixed" cellspacing="0">
+				<thead>
+				<tr class="thead">
+					<th scope="col" id="cb" class="manage-column column-cb check-column" style=""><input type="checkbox" /></th>
+					<th scope="col" id="username" class="manage-column column-username" style="">Username</th>
+					<th scope="col" id="name" class="manage-column column-name" style="">Name</th>
+					<th scope="col" id="email" class="manage-column column-email" style="">E-mail</th>
+					<th scope="col" id="role" class="manage-column column-role" style="">Role</th>
+					<th scope="col" id="displayed" class="manage-column column-displayed" style="">Displayed</th>
+				</tr>
+				</thead>
+				<tfoot>
+				<tr class="thead">
+					<th scope="col"  class="manage-column column-cb check-column" style=""><input type="checkbox" /></th>
+					<th scope="col"  class="manage-column column-username" style="">Username</th>
+					<th scope="col"  class="manage-column column-name" style="">Name</th>
+					<th scope="col"  class="manage-column column-email" style="">E-mail</th>
+					<th scope="col"  class="manage-column column-role" style="">Role</th>
+					<th scope="col" id="displayed" class="manage-column column-displayed" style="">Displayed</th>
+				</tr>
+				</tfoot>
+				<tbody id="users" class="list:user user-list">
+<?php
+	//
+	$c = 0;
+	foreach($m as $u) {
+		$u = new WP_User($u->ID);
+		$r = $u->roles;
+		$r = array_shift($r);
+		if(!empty($_REQUEST['role']) and $_REQUEST['role'] != $r) {
+			continue;
+		}
+		$d = is_float($c/2) ? '' : ' class="alternate"';
+		$e = $u->ID == get_currentuserinfo()->ID ? 'profile.php' : 'user-edit.php?user_id='.$u->ID.'&#038;wp_http_referer='.wp_get_referer();
+?>
+		<tr id='user-<?=$u->ID;?>'<?=$d;?>>
+			<th scope='row' class='check-column'><input type='checkbox' name='users[]' id='user_<?=$u->ID;?>' class='administrator' value='<?=$u->ID;?>' /></th>
+			<td class="username column-username">
+				<?=get_avatar($u->ID,32);?>
+				<strong>
+					<a href="<?=$e;?>"><?=$u->user_nicename;?></a>
+				</strong><br />
+				<div class="row-actions">
+					<span class='edit'><a href="admin.php?page=Edit%20Members%20List&users%5B%5D=<?=$u->ID;?>&action=show&_wpnonce=<?=wp_create_nonce('tern_wp_members_nonce');?>">Show</a> | </span>
+					<span class='edit'><a href="admin.php?page=Edit%20Members%20List&users%5B%5D=<?=$u->ID;?>&action=hide&_wpnonce=<?=wp_create_nonce('tern_wp_members_nonce');?>">Hide</a></span>
+				</div>
+			</td>
+			<td class="name column-name"><?=$u->first_name.' '.$u->last_name;?></td>
+			<td class="email column-email"><a href='mailto:<?=$u->user_email;?>' title='e-mail: <?=$u->user_email;?>'><?=$u->user_email;?></a></td>
+			<td class="role column-role"><?=$r;?></td>
+			<td class="role column-displayed"><?php if(in_array($u->ID,$o['hidden'])) { echo 'no'; } else { echo 'yes'; } ?></td>
+		</tr>
+<?php
+		$c++;
+	}
+?>
+				</tbody>
+			</table>
+			<div class="tablenav">
+				<div class="alignleft actions">
+					<select name="action2">
+						<option value="" selected="selected">Bulk Actions</option>
+						<option value="show">Show</option>
+						<option value="hide">Hide</option>
+					</select>
+					<input type="hidden" id="page" name="page" value="Edit Members List" />
+					<input type="hidden" id="_wpnonce" name="_wpnonce" value="<?=wp_create_nonce('tern_wp_members_nonce');?>" />
+					<input type="hidden" name="_wp_http_referer" value="<?php wp_get_referer(); ?>" />
+					<input type="submit" value="Apply" name="doaction2" id="doaction2" class="button-secondary action" />
+				</div>
+				<br class="clear" />
+			</div>
+		</form>
+	</div>
 <?php
 }
 //                                *******************************                                 //
@@ -196,6 +366,7 @@ class tern_members {
 	}
 	function query() {
 		global $wpdb;
+		$o = get_option('tern_wp_members');
 		$q = urldecode($_GET['query']);
 		$t = $_GET['type'];
 		$b = $_REQUEST['by'];
@@ -238,12 +409,12 @@ class tern_members {
 		}
 		unset($this->a);
 		foreach($this->r as $v) {
-			if(!empty($v)) {
-				$this->a[] = get_userdata($v);
+			if(!empty($v) and ((!is_admin() and !in_array($v,$o['hidden'])) or is_admin())) {
+				$this->a[] = new WP_User($v);
 			}
 		}
 		$s = empty($_GET['sort']) ? 'last_name' : $_GET['sort'];
-		$o = empty($_GET['order']) ? 'asc' : $_GET['order'];
+		$o = empty($_GET['order']) ? 'desc' : $_GET['order'];
 		$this->a = $this->sortMulti($this->a,$s,'str',$o);
 		return $this->a;
 	}
