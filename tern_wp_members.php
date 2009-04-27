@@ -272,7 +272,7 @@ function tern_wp_members_list() {
 			<td class="name column-name"><?=$u->first_name.' '.$u->last_name;?></td>
 			<td class="email column-email"><a href='mailto:<?=$u->user_email;?>' title='e-mail: <?=$u->user_email;?>'><?=$u->user_email;?></a></td>
 			<td class="role column-role"><?=$r;?></td>
-			<td class="role column-displayed"><?php if(in_array($u->ID,$o['hidden'])) { echo 'no'; } else { echo 'yes'; } ?></td>
+			<td class="role column-displayed"><?php if(!empty($o['hidden']) and in_array($u->ID,$o['hidden'])) { echo 'no'; } else { echo 'yes'; } ?></td>
 		</tr>
 <?php
 		$c++;
