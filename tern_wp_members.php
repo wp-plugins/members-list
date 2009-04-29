@@ -4,7 +4,7 @@ Plugin Name: Members List
 Plugin URI: http://www.ternstyle.us/products/plugins/wordpress/wordpress-members-plugin
 Description: List your members with pagination and search capabilities.
 Author: Matthew Praetzel
-Version: 2.0
+Version: 2.0.1
 Author URI: http://www.ternstyle.us/
 Licensing : http://www.ternstyle.us/license.html
 */
@@ -18,7 +18,7 @@ Licensing : http://www.ternstyle.us/license.html
 ////	Account:
 ////		Added on January 29th 2009
 ////	Version:
-////		2.0
+////		2.0.1
 ////
 ////	Written by Matthew Praetzel. Copyright (c) 2009 Matthew Praetzel.
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -315,7 +315,7 @@ class tern_members {
 	//functions
 	function tern_members() {
 		global $getFIX;
-		$o = get_option('tern_wp_members');
+		$o = $getWP->getOption('tern_wp_members',$tern_wp_members_defaults);
 		if(!empty($o)) {
 			$this->num = $o['limit'];
 			$this->meta_fields = explode(',',$o['meta']);
@@ -326,7 +326,7 @@ class tern_members {
 	function members($a) {
 		$this->scope();
 		$this->query();
-		$o = get_option('tern_wp_members');
+		$o = $getWP->getOption('tern_wp_members',$tern_wp_members_defaults);
 		//
 		if($a['search']) {
 			$this->search();
@@ -366,7 +366,7 @@ class tern_members {
 	}
 	function query() {
 		global $wpdb;
-		$o = get_option('tern_wp_members');
+		$o = $getWP->getOption('tern_wp_members',$tern_wp_members_defaults);
 		$q = urldecode($_GET['query']);
 		$t = $_GET['type'];
 		$b = $_REQUEST['by'];
