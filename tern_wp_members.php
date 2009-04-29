@@ -314,8 +314,9 @@ class tern_members {
 	
 	//functions
 	function tern_members() {
-		global $getFIX;
-		$o = $getWP->getOption('tern_wp_members',$tern_wp_members_defaults);
+		global $getFIX,$getWP,$tern_wp_members_defaults;
+		$this->wp = $getWP;
+		$o = $this->wp->getOption('tern_wp_members',$tern_wp_members_defaults);
 		if(!empty($o)) {
 			$this->num = $o['limit'];
 			$this->meta_fields = explode(',',$o['meta']);
@@ -324,9 +325,10 @@ class tern_members {
 		$this->url = strpos($this->url,'?') !== false ? $o['url'] : $o['url'].'?';
 	}
 	function members($a) {
+		global $tern_wp_members_defaults;
 		$this->scope();
 		$this->query();
-		$o = $getWP->getOption('tern_wp_members',$tern_wp_members_defaults);
+		$o = $this->wp->getOption('tern_wp_members',$tern_wp_members_defaults);
 		//
 		if($a['search']) {
 			$this->search();
@@ -365,8 +367,8 @@ class tern_members {
 		echo '</ul>';
 	}
 	function query() {
-		global $wpdb;
-		$o = $getWP->getOption('tern_wp_members',$tern_wp_members_defaults);
+		global $wpdb,$tern_wp_members_defaults;
+		$o = $this->wp->getOption('tern_wp_members',$tern_wp_members_defaults);
 		$q = urldecode($_GET['query']);
 		$t = $_GET['type'];
 		$b = $_REQUEST['by'];
