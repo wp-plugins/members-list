@@ -7,7 +7,7 @@
 ////	Account:
 ////		Added on April 21st 2009
 ////	Version:
-////		0.2
+////		0.3
 ////
 ////	Written by Matthew Praetzel. Copyright (c) 2009 Matthew Praetzel.
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -43,7 +43,7 @@ class ternWP {
 		}
 		elseif(isset($o) and !empty($d)) {
 			foreach($d as $k => $v) {
-				if(empty($o[$k])) {
+				if(!isset($o[$k])) {
 					$o[$k] = $v;
 				}
 			}

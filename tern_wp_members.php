@@ -4,7 +4,7 @@ Plugin Name: Members List
 Plugin URI: http://www.ternstyle.us/products/plugins/wordpress/wordpress-members-plugin
 Description: List your members with pagination and search capabilities.
 Author: Matthew Praetzel
-Version: 2.0.2
+Version: 2.0.3
 Author URI: http://www.ternstyle.us/
 Licensing : http://www.ternstyle.us/license.html
 */
@@ -18,7 +18,7 @@ Licensing : http://www.ternstyle.us/license.html
 ////	Account:
 ////		Added on January 29th 2009
 ////	Version:
-////		2.0.2
+////		2.0.3
 ////
 ////	Written by Matthew Praetzel. Copyright (c) 2009 Matthew Praetzel.
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -255,7 +255,8 @@ function tern_wp_members_list() {
 			continue;
 		}
 		$d = is_float($c/2) ? '' : ' class="alternate"';
-		$e = $u->ID == get_currentuserinfo()->ID ? 'profile.php' : 'user-edit.php?user_id='.$u->ID.'&#038;wp_http_referer='.wp_get_referer();
+		$nu = get_currentuserinfo();
+		$e = $u->ID == $nu->ID ? 'profile.php' : 'user-edit.php?user_id='.$u->ID.'&#038;wp_http_referer='.wp_get_referer();
 ?>
 		<tr id='user-<?=$u->ID;?>'<?=$d;?>>
 			<th scope='row' class='check-column'><input type='checkbox' name='users[]' id='user_<?=$u->ID;?>' class='administrator' value='<?=$u->ID;?>' /></th>
@@ -321,6 +322,10 @@ class tern_members {
 			$this->num = $o['limit'];
 			$this->meta_fields = explode(',',$o['meta']);
 			$this->meta_fields = $getFIX->removeEmptyValues($this->meta_fields);
+			foreach($this->meta_fields as $k => $v) {
+				$a[$v] = $v;
+			}
+			$this->meta_fields = $a;
 		}
 		$this->url = strpos($this->url,'?') !== false ? $o['url'] : $o['url'].'?';
 	}
