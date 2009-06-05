@@ -4,7 +4,7 @@ Plugin Name: Members List
 Plugin URI: http://www.ternstyle.us/products/plugins/wordpress/wordpress-members-plugin
 Description: List your members with pagination and search capabilities.
 Author: Matthew Praetzel
-Version: 2.1.1
+Version: 2.2
 Author URI: http://www.ternstyle.us/
 Licensing : http://www.ternstyle.us/license.html
 */
@@ -18,7 +18,7 @@ Licensing : http://www.ternstyle.us/license.html
 ////	Account:
 ////		Added on January 29th 2009
 ////	Version:
-////		2.1.1
+////		2.2
 ////
 ////	Written by Matthew Praetzel. Copyright (c) 2009 Matthew Praetzel.
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -31,12 +31,14 @@ Licensing : http://www.ternstyle.us/license.html
 //                                **                           **                                 //
 //                                *******************************                                 //
 $tern_wp_members_defaults = array(
-	'limit'=>10,
-	'meta'=>'',
-	'url'=>get_bloginfo('home').'/members',
-	'gravatars'=>1,
-	'hidden'=>array(),
-	'fields'=>array(
+	'limit'		=>	10,
+	'sort'		=>	'last_name',
+	'order'		=>	'asc',
+	'meta'		=>	'',
+	'url'		=>	get_bloginfo('home').'/members',
+	'gravatars'	=>	1,
+	'hidden'	=>	array(),
+	'fields'	=>	array(
 		'User Name'		=>	array(
 			'name'		=>	'user_nicename',
 			'markup'	=>	'<div class="tern_wp_members_user_nicename"><h3><a href="%author_url%">%value%</a></h3></div>'
@@ -173,7 +175,7 @@ function tern_wp_members_menu() {
 //                                **                           **                                 //
 //                                *******************************                                 //
 function tern_wp_members_options() {
-	global $getWP,$getOPTS,$tern_wp_msg,$tern_wp_members_defaults;
+	global $getWP,$getOPTS,$tern_wp_msg,$tern_wp_members_defaults,$tern_wp_members_fields,$wpdb;
 	$o = $getWP->getOption('tern_wp_members',$tern_wp_members_defaults);
 	if(wp_verify_nonce($_REQUEST['_wpnonce'],'tern_wp_members_nonce') and $_REQUEST['action'] == 'update') {
 		$f = new parseForm('post','_wp_http_referer,_wpnonce,action,submit');
@@ -205,6 +207,32 @@ function tern_wp_members_options() {
 						$a = array(5,10,15,20,25,50,100,200);
 						echo $getOPTS->select($a,'limit','limit','','',false,array($o['limit']));
 					?>
+				</td>
+			</tr>
+			<tr valign="top">
+				<th scope="row"><label for="sort">Sort the members list originally by</label></th>
+				<td>
+					<?php
+						$a = array();
+						foreach($tern_wp_members_fields as $k => $v) {
+							$a['Standard Fields'][] = array($k,$v);
+						}
+						$r = $wpdb->get_col("select distinct meta_key from $wpdb->usermeta");
+						foreach($r as $v) {
+							if(in_array($v,$tern_wp_members_fields)) {
+								continue;
+							}
+							$a['Available Meta Fields'][] = array($v,$v);
+						}
+						echo $getOPTS->selectTiered($a,1,0,'sort','sort','Sort','',false,array($o['sort']));
+					?>
+				</td>
+			</tr>
+			<tr valign="top">
+				<th scope="row"><label for="order">Sort members list originally in this order</label></th>
+				<td>
+					<input type="radio" name="order" value="asc" <?php if($o['order'] == 'asc') { echo 'checked'; } ?> /> Ascending
+					<input type="radio" name="order" value="desc" <?php if($o['order'] == 'desc') { echo 'checked'; } ?> /> Descending
 				</td>
 			</tr>
 			<tr valign="top">
@@ -265,7 +293,7 @@ function tern_wp_members_markup() {
 								continue 2;
 							}
 						}
-						$a[$k] = $v;
+						$a['Standard Fields'][] = array($k,$v);
 					}
 					$r = $wpdb->get_col("select distinct meta_key from $wpdb->usermeta");
 					foreach($r as $v) {
@@ -277,9 +305,9 @@ function tern_wp_members_markup() {
 								continue 2;
 							}
 						}
-						$a[$v] = $v;
+						$a['Available Meta Fields'][] = array($v,$v);
 					}
-					echo $getOPTS->selectPaired($a,'new_field','new_field','Add New Field','',false);
+					echo $getOPTS->selectTiered($a,1,0,'new_field','new_field','Add New Field','',false);
 				?>
 				<input type="hidden" id="page" name="page" value="Configure Mark-Up" />
 				<input type="submit" value="Add New Field" class="button" />
@@ -661,8 +689,8 @@ class tern_members {
 				$this->a[] = new WP_User($v);
 			}
 		}
-		$s = empty($_GET['sort']) ? 'last_name' : $_GET['sort'];
-		$o = empty($_GET['order']) ? 'desc' : $_GET['order'];
+		$s = empty($_GET['sort']) ? $o['sort'] : $_GET['sort'];
+		$o = empty($_GET['order']) ? $o['order'] : $_GET['order'];
 		$this->a = $this->sortMulti($this->a,$s,'str',$o);
 		return $this->a;
 	}
@@ -681,6 +709,8 @@ class tern_members {
 		$this->e = count($this->a) > (($this->s*$this->num)+$this->num) ? (($this->s*$this->num)+$this->num) : count($this->a);
 	}
 	function pagination() {
+		global $tern_wp_members_defaults;
+		$o = $this->wp->getOption('tern_wp_members',$tern_wp_members_defaults);
 		$q = $_GET['query'];
 		$b = $_GET['by'];
 		$t = $_GET['type'];
@@ -697,20 +727,23 @@ class tern_members {
 				$s = ($e-4)<=0 ? 1 : $e-4;
 			}
 			//
+			$sort = empty($_GET['sort']) ? $o['sort'] : $_GET['sort'];
+			$order = empty($_GET['order']) ? $o['order'] : $_GET['order'];
+			//
 			for($i=$s;$i<=$e;$i++) {
-				$h = $this->url.'&page='.($i).'&query='.$q.'&by='.$b.'&type='.$t.'&sort='.$_GET['sort'].'&order='.$_GET['order'];
+				$h = $this->url.'&page='.($i).'&query='.$q.'&by='.$b.'&type='.$t.'&sort='.$sort.'&order='.$order;
 				$c = intval($this->s+1) == $i ? ' class="tern_members_pagination_current"' : '';
 				$r .= '<li'.$c.'><a href="' . $h . '">' . $i . '</a></li>';
 			}
 			if($this->s > 0) {
-				$r = '<li><a href="'.$this->url.'&page='.intval($this->s).'&query='.$q.'&by='.$b.'&type='.$t.'&sort='.$_GET['sort'].'&order='.$_GET['order'].'">Previous</a></li>'.$r;
+				$r = '<li><a href="'.$this->url.'&page='.intval($this->s).'&query='.$q.'&by='.$b.'&type='.$t.'&sort='.$sort.'&order='.$order.'">Previous</a></li>'.$r;
 			}
 			if(count($this->a) > (($this->s*$this->num)+$this->num)) {
-				$r .= '<li><a href="'.$this->url.'&page='.intval($this->s+2).'&query='.$q.'&by='.$b.'&type='.$t.'&sort='.$_GET['sort'].'&order='.$_GET['order'].'">Next</a></li>';
-				$r .= '<li><a href="'.$this->url.'&page='.$e.'&query='.$q.'&by='.$b.'&type='.$t.'&sort='.$_GET['sort'].'&order='.$_GET['order'].'">Last</a></li>';
+				$r .= '<li><a href="'.$this->url.'&page='.intval($this->s+2).'&query='.$q.'&by='.$b.'&type='.$t.'&sort='.$sort.'&order='.$order.'">Next</a></li>';
+				$r .= '<li><a href="'.$this->url.'&page='.$e.'&query='.$q.'&by='.$b.'&type='.$t.'&sort='.$sort.'&order='.$order.'">Last</a></li>';
 			}
 			//
-			$r = $this->s > 0 ? '<li><a href="'.$this->url.'&page=1&query='.$q.'&by='.$b.'&type='.$t.'&sort='.$_GET['sort'].'&order='.$_GET['order'].'">First</a></li>'.$r : $r;
+			$r = $this->s > 0 ? '<li><a href="'.$this->url.'&page=1&query='.$q.'&by='.$b.'&type='.$t.'&sort='.$sort.'&order='.$order.'">First</a></li>'.$r : $r;
 			//
 			$r = '<ul class="tern_members_pagination tern_wp_pagination">' . $r . '</ul>';
 		}
@@ -745,8 +778,9 @@ class tern_members {
 		echo '</ul><br /><span>(by last name)</span></div>';
 	}
 	function sortby() {
+		global $tern_wp_members_defaults;
+		$b = $this->wp->getOption('tern_wp_members',$tern_wp_members_defaults);
 		$a = array('Last Name'=>'last_name','First Name'=>'first_name','Registration Date'=>'user_registered','Email'=>'user_email');
-		//
 		foreach($a as $k => $v) {
 			unset($c);
 			$o = 'asc';
@@ -754,6 +788,10 @@ class tern_members {
 				$o = 'desc';
 			}
 			if($_GET['sort'] == $v) {
+				$c = $o == 'asc' ? ' class="tern_members_sorted_u" ' : ' class="tern_members_sorted_d" ';
+			}
+			if(empty($_GET['sort']) and $b['sort'] == $v) {
+				$o = $b['order'] == 'asc' ? 'desc' : 'asc';
 				$c = $o == 'asc' ? ' class="tern_members_sorted_u" ' : ' class="tern_members_sorted_d" ';
 			}
 			$r .= '<li'.$c.'><a href="'.$this->url.'&query='.urldecode($_GET['query']).'&by='.$_GET['by'].'&type='.$_GET['type'].'&sort='.$v.'&order='.$o.'">'.$k.'</a></li>';
