@@ -4,7 +4,7 @@ Plugin Name: Members List
 Plugin URI: http://www.ternstyle.us/products/plugins/wordpress/wordpress-members-plugin
 Description: List your members with pagination and search capabilities.
 Author: Matthew Praetzel
-Version: 2.2
+Version: 2.2.1
 Author URI: http://www.ternstyle.us/
 Licensing : http://www.ternstyle.us/license.html
 */
@@ -18,7 +18,7 @@ Licensing : http://www.ternstyle.us/license.html
 ////	Account:
 ////		Added on January 29th 2009
 ////	Version:
-////		2.2
+////		2.2.1
 ////
 ////	Written by Matthew Praetzel. Copyright (c) 2009 Matthew Praetzel.
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -581,7 +581,7 @@ class tern_members {
 			}
 			$this->meta_fields = $a;
 		}
-		$this->url = strpos($this->url,'?') !== false ? $o['url'] : $o['url'].'?';
+		$this->url = strpos($o['url'],'?') !== false ? $o['url'] : $o['url'].'?';
 	}
 	function members($a) {
 		global $tern_wp_members_defaults;
@@ -765,6 +765,8 @@ class tern_members {
 			<label for="query">Search Our Members:</label>
 			<input type="text" id="query" name="query" id="" />
 			by '.$getOPTS->selectPaired($o,'by','by','','','All Fields',array($_REQUEST['by'])).' 
+			<input type="hidden" name="p" value="'.$_REQUEST['p'].'" />
+			<input type="hidden" name="page_id" value="'.$_REQUEST['page_id'].'" />
 			<input type="submit" value="Submit" />
 		</form>
 		Search alphabetically:<ul class="tern_members_pagination">';
