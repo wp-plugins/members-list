@@ -6,6 +6,8 @@
 ////		1) ternstyle's wordpress functions
 ////	Account:
 ////		Added on April 21st 2009
+////	Version:
+////		0.3
 ////
 ////	Written by Matthew Praetzel. Copyright (c) 2009 Matthew Praetzel.
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -38,6 +40,14 @@ class ternWP {
 		}
 		elseif(isset($o) and (empty($o) or $v) and !empty($d)) {
 			update_option($n,$d);
+		}
+		elseif(isset($o) and !empty($d)) {
+			foreach($d as $k => $v) {
+				if(!isset($o[$k])) {
+					$o[$k] = $v;
+				}
+			}
+			update_option($n,$o);
 		}
 		return get_option($n);
 	}
