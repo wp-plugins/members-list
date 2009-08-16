@@ -4,7 +4,7 @@ Plugin Name: Members List
 Plugin URI: http://www.ternstyle.us/products/plugins/wordpress/wordpress-members-plugin
 Description: List your members with pagination and search capabilities.
 Author: Matthew Praetzel
-Version: 2.3
+Version: 2.4
 Author URI: http://www.ternstyle.us/
 Licensing : http://www.ternstyle.us/license.html
 */
@@ -18,7 +18,7 @@ Licensing : http://www.ternstyle.us/license.html
 ////	Account:
 ////		Added on January 29th 2009
 ////	Version:
-////		2.3
+////		2.4
 ////
 ////	Written by Matthew Praetzel. Copyright (c) 2009 Matthew Praetzel.
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -140,6 +140,30 @@ function tern_wp_members_actions() {
 			die();
 		}
 	}
+	//Settings
+	elseif($_REQUEST['page'] == 'Members List Settings') {
+		$_POST['meta'] = empty($_POST['meta']) ? '' : $_POST['meta'];
+		$getWP->updateOption('tern_wp_members',$tern_wp_members_defaults,'tern_wp_members_nonce');
+	}
+	//Members
+	elseif($_REQUEST['page'] == 'Edit Members List') {
+		$a = empty($_REQUEST['action']) ? $_REQUEST['action2'] : $_REQUEST['action'];
+		if(wp_verify_nonce($_REQUEST['_wpnonce'],'tern_wp_members_nonce') and !empty($a)) {
+			$r = array();
+			$o['hidden'] = is_array($o['hidden']) ? $o['hidden'] : array();
+			foreach($_REQUEST['users'] as $v) {
+				if($a == 'show' and in_array($v,$o['hidden'])) {
+					array_splice($o['hidden'],array_search($v,$o['hidden']),1);
+				}
+				elseif($a == 'hide' and !in_array($v,$o['hidden'])) {
+					$o['hidden'][] = $v;
+				}
+			}
+			$o = $getWP->getOption('tern_wp_members',$o,true);
+			$tern_wp_msg = empty($tern_wp_msg) ? 'You have successfully updated your settings.' : $tern_wp_msg;
+		}
+	}
+	
 }
 //                                *******************************                                 //
 //________________________________** SCRIPTS                   **_________________________________//
@@ -179,16 +203,6 @@ function tern_wp_members_menu() {
 function tern_wp_members_options() {
 	global $getWP,$getOPTS,$tern_wp_msg,$tern_wp_members_defaults,$tern_wp_members_fields,$tern_wp_meta_fields,$wpdb;
 	$o = $getWP->getOption('tern_wp_members',$tern_wp_members_defaults);
-	if(wp_verify_nonce($_REQUEST['_wpnonce'],'tern_wp_members_nonce') and $_REQUEST['action'] == 'update') {
-		$f = new parseForm('post','_wp_http_referer,_wpnonce,action,submit');
-		foreach($o as $k => $v) {
-			if(empty($f->a[$k])) {
-				$f->a[$k] = $v;
-			}
-		}
-		$o = $getWP->getOption('tern_wp_members',$f->a,true);
-		$tern_wp_msg = empty($tern_wp_msg) ? 'You have successfully updated your settings.' : $tern_wp_msg;
-	}
 ?>
 <div class="wrap">
 	<div id="icon-options-general" class="icon32"><br /></div>
@@ -261,6 +275,7 @@ function tern_wp_members_options() {
 			</tr>
 		</table>
 		<p class="submit"><input type="submit" name="submit" class="button-primary" value="Save Changes" /></p>
+		<input type="hidden" id="page" name="page" value="Members List Settings" />
 		<input type="hidden" name="action" value="update" />
 		<input type="hidden" id="_wpnonce" name="_wpnonce" value="<?=wp_create_nonce('tern_wp_members_nonce');?>" />
 		<input type="hidden" name="_wp_http_referer" value="<?php wp_get_referer(); ?>" />
@@ -404,24 +419,7 @@ function tern_wp_members_markup() {
 function tern_wp_members_list() {
 	global $wp_roles,$getWP,$tern_wp_msg,$tern_wp_members_defaults,$current_user;
 	get_currentuserinfo();
-	//save settings
 	$o = $getWP->getOption('tern_wp_members',$tern_wp_members_defaults);
-	$a = empty($_REQUEST['action']) ? $_REQUEST['action2'] : $_REQUEST['action'];
-	if(wp_verify_nonce($_REQUEST['_wpnonce'],'tern_wp_members_nonce') and !empty($a)) {
-		$r = array();
-		$o['hidden'] = is_array($o['hidden']) ? $o['hidden'] : array();
-		foreach($_REQUEST['users'] as $v) {
-			if($a == 'show' and in_array($v,$o['hidden'])) {
-				array_splice($o['hidden'],array_search($v,$o['hidden']),1);
-			}
-			elseif($a == 'hide' and !in_array($v,$o['hidden'])) {
-				$o['hidden'][] = $v;
-			}
-		}
-		$o = $getWP->getOption('tern_wp_members',$o,true);
-		$tern_wp_msg = empty($tern_wp_msg) ? 'You have successfully updated your settings.' : $tern_wp_msg;
-	}
-	//compile list
 	$l = new tern_members();
 	$_GET['order'] = 'desc';
 	$m = $l->query('all');
