@@ -33,7 +33,7 @@ class parseForm {
 				}
 			}
 			if(!in_array($k,$e)) {
-				$this->a[$k] = $v;
+				$this->a[$k] = stripslashes($v);
 			}
 		}
 	}
