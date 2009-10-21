@@ -4,7 +4,7 @@ Plugin Name: Members List
 Plugin URI: http://www.ternstyle.us/products/plugins/wordpress/wordpress-members-plugin
 Description: List your members with pagination and search capabilities.
 Author: Matthew Praetzel
-Version: 2.5
+Version: 2.6
 Author URI: http://www.ternstyle.us/
 Licensing : http://www.ternstyle.us/license.html
 */
@@ -18,7 +18,7 @@ Licensing : http://www.ternstyle.us/license.html
 ////	Account:
 ////		Added on January 29th 2009
 ////	Version:
-////		2.5
+////		2.6
 ////
 ////	Written by Matthew Praetzel. Copyright (c) 2009 Matthew Praetzel.
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -648,48 +648,48 @@ class tern_members {
 		}
 		elseif(empty($query)) {
 			if(in_array($sort,$tern_wp_user_fields)) {
-				$q = "select ID from $wpdb->users where 1 = 1 $h order by $sort $order limit $s,$e";//
+				$q = "select distinct ID from $wpdb->users where 1 = 1 $h order by $sort $order limit $s,$e";//
 			}
 			else {
-				$q = "select ID from $wpdb->users left join $wpdb->usermeta on ($wpdb->users.ID = $wpdb->usermeta.user_id and $wpdb->usermeta.meta_key = '".$sort."') where 1 = 1 $h order by $wpdb->usermeta.meta_value $order limit $s,$e";//
+				$q = "select distinct ID from $wpdb->users left join $wpdb->usermeta on ($wpdb->users.ID = $wpdb->usermeta.user_id and $wpdb->usermeta.meta_key = '".$sort."') where 1 = 1 $h order by $wpdb->usermeta.meta_value $order limit $s,$e";//
 			}
-			$tq = "select COUNT(*) from $wpdb->users where 1 = 1 $h";//
+			$tq = "select COUNT(distinct ID) from $wpdb->users where 1 = 1 $h";//
 		}
 		elseif(!empty($by)) {
 			if(in_array($by,$tern_wp_user_fields)) {
 				if(in_array($sort,$tern_wp_user_fields)) {
-					$q = "select ID from $wpdb->users where instr($by,'$query') != 0 $h order by $sort $order limit $s,$e";//
+					$q = "select distinct ID from $wpdb->users where instr($by,'$query') != 0 $h order by $sort $order limit $s,$e";//
 				}
 				else {
-					$q = "select ID from $wpdb->users left join $wpdb->usermeta on ($wpdb->users.ID = $wpdb->usermeta.user_id and $wpdb->usermeta.meta_key = '$sort') where instr($wpdb->users.$by,'$query') != 0 $h order by $wpdb->usermeta.meta_value $order limit $s,$e";//
+					$q = "select distinct ID from $wpdb->users left join $wpdb->usermeta on ($wpdb->users.ID = $wpdb->usermeta.user_id and $wpdb->usermeta.meta_key = '$sort') where instr($wpdb->users.$by,'$query') != 0 $h order by $wpdb->usermeta.meta_value $order limit $s,$e";//
 				}
-				$tq = "select COUNT(*) from $wpdb->users where instr($by,'$query') != 0 $h";//
+				$tq = "select COUNT(distinct ID) from $wpdb->users where instr($by,'$query') != 0 $h";//
 			}
 			else {
 				if(in_array($sort,$tern_wp_user_fields)) {
 					$h = !empty($o['hidden']) ? " and $wpdb->users.ID NOT IN (".implode(',',$o['hidden']).")" : '';
-					$q = "select $wpdb->users.ID from $wpdb->users join $wpdb->usermeta on ($wpdb->users.ID = $wpdb->usermeta.user_id) where $wpdb->usermeta.meta_key = '$by' and instr($wpdb->usermeta.meta_value,'$query') != 0 $h order by $wpdb->users.$sort $order limit $s,$e";//
+					$q = "select distinct $wpdb->users.ID from $wpdb->users join $wpdb->usermeta on ($wpdb->users.ID = $wpdb->usermeta.user_id) where $wpdb->usermeta.meta_key = '$by' and instr($wpdb->usermeta.meta_value,'$query') != 0 $h order by $wpdb->users.$sort $order limit $s,$e";//
 				}
 				else {
 					$h = !empty($o['hidden']) ? " and t1.user_id NOT IN (".implode(',',$o['hidden']).")" : '';
-					$q = "select t1.user_id from $wpdb->usermeta as t1, $wpdb->usermeta as t2 where t1.user_id = t2.user_id and t1.meta_key = '$by' and instr(t1.meta_value,'$query') != 0 and t2.meta_key='$sort' $h order by t2.meta_value $order limit $s,$e";//
+					$q = "select distinct t1.user_id from $wpdb->usermeta as t1, $wpdb->usermeta as t2 where t1.user_id = t2.user_id and t1.meta_key = '$by' and instr(t1.meta_value,'$query') != 0 and t2.meta_key='$sort' $h order by t2.meta_value $order limit $s,$e";//
 				}
 				$h = !empty($o['hidden']) ? " and user_id NOT IN (".implode(',',$o['hidden']).")" : '';
-				$tq = "select COUNT(*) from $wpdb->usermeta where meta_key = '$by' and instr(meta_value,'$query') != 0 $h";//
+				$tq = "select COUNT(distinct user_id) from $wpdb->usermeta where meta_key = '$by' and instr(meta_value,'$query') != 0 $h";//
 			}
 		}
 		else {
 			if($type == 'alpha') {
 				if(in_array($sort,$tern_wp_user_fields)) {
 					$h = !empty($o['hidden']) ? " and $wpdb->users.ID NOT IN (".implode(',',$o['hidden']).")" : '';
-					$q = "select $wpdb->users.ID from $wpdb->users join $wpdb->usermeta on ($wpdb->users.ID = $wpdb->usermeta.user_id) where $wpdb->usermeta.meta_key = 'last_name' and SUBSTRING(LOWER($wpdb->usermeta.meta_value),1,1) = '$query' $h order by $wpdb->users.$sort $order limit $s,$e";//
+					$q = "select distinct $wpdb->users.ID from $wpdb->users join $wpdb->usermeta on ($wpdb->users.ID = $wpdb->usermeta.user_id) where $wpdb->usermeta.meta_key = 'last_name' and SUBSTRING(LOWER($wpdb->usermeta.meta_value),1,1) = '$query' $h order by $wpdb->users.$sort $order limit $s,$e";//
 				}
 				else {
 					$h = !empty($o['hidden']) ? " and t1.user_id NOT IN (".implode(',',$o['hidden']).")" : '';
-					$q = "select t1.user_id from $wpdb->usermeta as t1, $wpdb->usermeta as t2 where t1.user_id = t2.user_id and t1.meta_key = 'last_name' and SUBSTRING(LOWER(t1.meta_value),1,1) = '$query' and t2.meta_key='".$sort."' $h order by t2.meta_value $order limit $s,$e";//
+					$q = "select distinct t1.user_id from $wpdb->usermeta as t1, $wpdb->usermeta as t2 where t1.user_id = t2.user_id and t1.meta_key = 'last_name' and SUBSTRING(LOWER(t1.meta_value),1,1) = '$query' and t2.meta_key='".$sort."' $h order by t2.meta_value $order limit $s,$e";//
 				}
 				$h = !empty($o['hidden']) ? " and user_id NOT IN (".implode(',',$o['hidden']).")" : '';
-				$tq = "select COUNT(*) from $wpdb->usermeta where meta_key = 'last_name' and SUBSTRING(UPPER($wpdb->usermeta.meta_value),1,1) = '$query' $h";//
+				$tq = "select COUNT(distinct user_id) from $wpdb->usermeta where meta_key = 'last_name' and SUBSTRING(UPPER($wpdb->usermeta.meta_value),1,1) = '$query' $h";//
 			}
 			else {
 				$c = 1;

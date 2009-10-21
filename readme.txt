@@ -4,13 +4,18 @@ Donate link: http://www.ternstyle.us/donate
 Tags: members, members list, users, users list
 Requires at least: 2.7
 Tested up to: 2.8.4
-Stable tag: 2.5
+Stable tag: 2.6
 
 The Members Plugin allows you to create a post on your wordpress blog that lists all your wordpress members.
 
 == Description ==
 
 The Members Plugin allows you to create a post on your wordpress blog that lists all your wordpress members. When viewing the list of members you can also search through your members according to first name, last name, email address, URL or any other number of user meta fields you may specify. Employing pagination you can page through your search results and sort your results according to last name, first name, registration date or email. Documentation: `http://wiki.ternstyle.us/index.php/Wordpress_Members_Plugin_Documentation`
+
+* Homepage for this plugin: `http://www.ternstyle.us/products/plugins/wordpress/wordpress-members-plugin`
+* Documentation: `http://wiki.ternstyle.us/index.php/Wordpress_Members_Plugin_Documentation`
+* Working example: `http://blog.ternstyle.us/members`
+* Change Log: `http://wiki.ternstyle.us/index.php/Wordpress_Members_Plugin_Recent_Updates`
 
 == Installation ==
 
@@ -45,6 +50,7 @@ Template Name: Members
 * Homepage for this plugin: `http://www.ternstyle.us/products/plugins/wordpress/wordpress-members-plugin`
 * Documentation: `http://wiki.ternstyle.us/index.php/Wordpress_Members_Plugin_Documentation`
 * Working example: `http://blog.ternstyle.us/members`
+* Change Log: `http://wiki.ternstyle.us/index.php/Wordpress_Members_Plugin_Recent_Updates`
 
 == Frequently Asked Questions ==
 
