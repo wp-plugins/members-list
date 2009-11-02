@@ -23,11 +23,11 @@ textarea.tern_members_fields { width:100%; }
 /*-----------------------
 	PAGINATION
 -----------------------*/
-#tern_members_pagination { margin:20px 0px; }
-#tern_members_pagination ul.tern_members_pagination { display:block;width:100%;border:1px solid #ccc;margin:0px;padding:0px;list-style:none; }
-#tern_members_pagination ul.tern_members_pagination li { display:inline;border-right:1px solid #ccc;padding:0px 8px;margin:0px;line-height:18px; }
-#tern_members_pagination ul.tern_members_pagination li.tern_members_pagination_current a { color:#333;text-decoration:none; }
-.tern_members_current { color:#000; }
+ul.tern_pagination, ul.tern_pagination li { float:none;border:0;margin:0px;padding:0px;list-style:none; }
+ul.tern_pagination { width:100%;margin:20px 0; }
+ul.tern_pagination li { display:inline-block; }
+ul.tern_pagination a { display:inline-block;background:#fff;border:1px solid #999;padding:0 4px;margin-right:2px;line-height:22px;color:#999;text-decoration:none; }
+li.tern_pagination_current a { color:#122336;border:1px solid #122336; }
 /*-----------------------
 	SORT
 -----------------------*/
