@@ -4,7 +4,7 @@ Plugin Name: Members List
 Plugin URI: http://www.ternstyle.us/products/plugins/wordpress/wordpress-members-plugin
 Description: List your members with pagination and search capabilities.
 Author: Matthew Praetzel
-Version: 2.6
+Version: 2.7
 Author URI: http://www.ternstyle.us/
 Licensing : http://www.ternstyle.us/license.html
 */
@@ -18,7 +18,7 @@ Licensing : http://www.ternstyle.us/license.html
 ////	Account:
 ////		Added on January 29th 2009
 ////	Version:
-////		2.6
+////		2.7
 ////
 ////	Written by Matthew Praetzel. Copyright (c) 2009 Matthew Praetzel.
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -79,8 +79,8 @@ require_once(ABSPATH.'wp-content/plugins/members-list/ternstyle/class/arrays.php
 //                                **                           **                                 //
 //                                *******************************                                 //
 add_action('init','tern_wp_members_actions');
-add_action('init','tern_wp_members_js');
-add_action('wp_print_scripts','tern_wp_members_scripts');
+add_action('wp_print_scripts','tern_wp_members_js');
+add_action('wp_print_styles','tern_wp_members_scripts');
 add_action('admin_menu','tern_wp_members_menu');
 //                                *******************************                                 //
 //________________________________** ACTIONS                   **_________________________________//
@@ -172,8 +172,8 @@ function tern_wp_members_actions() {
 //                                *******************************                                 //
 function tern_wp_members_scripts() {
 	if(!is_admin() or $_REQUEST['page'] == 'Configure Mark-Up') {
-		echo '<link rel="stylesheet" href="'.get_bloginfo('home').'/wp-content/plugins/members-list/tern_wp_members.css" type="text/css" media="all" />' . "\n";
-		echo '<script type="text/javascript">var tern_wp_root = "'.get_bloginfo('home').'";</script>';
+		wp_enqueue_style('tern_wp_members_css',get_bloginfo('wpurl').'/wp-content/plugins/members-list/tern_wp_members.css');
+		
 	}
 }
 function tern_wp_members_js() {
@@ -181,6 +181,7 @@ function tern_wp_members_js() {
 		wp_enqueue_script('TableDnD',get_bloginfo('home').'/wp-content/plugins/members-list/js/jquery.tablednd_0_5.js.php',array('jquery'),'0.5');
 		wp_enqueue_script('members-list',get_bloginfo('home').'/wp-content/plugins/members-list/js/members-list.js');
 	}
+	echo '<script type="text/javascript">var tern_wp_root = "'.get_bloginfo('home').'";</script>';
 }
 //                                *******************************                                 //
 //________________________________** MENUS                     **_________________________________//
@@ -737,7 +738,7 @@ class tern_members {
 			$order = empty($_GET['order']) ? $o['order'] : $_GET['order'];
 			for($i=$s;$i<=$e;$i++) {
 				$h = $this->url.'&page='.($i).'&query='.$q.'&by='.$b.'&type='.$t.'&sort='.$sort.'&order='.$order;
-				$c = intval($this->s+1) == $i ? ' class="tern_members_pagination_current"' : '';
+				$c = intval($this->s+1) == $i ? ' class="tern_members_pagination_current tern_pagination_current"' : '';
 				$r .= '<li'.$c.'><a href="' . $h . '">' . $i . '</a></li>';
 			}
 			if($this->s > 0) {
@@ -748,7 +749,7 @@ class tern_members {
 				$r .= '<li><a href="'.$this->url.'&page='.$this->n.'&query='.$q.'&by='.$b.'&type='.$t.'&sort='.$sort.'&order='.$order.'">Last</a></li>';
 			}
 			$r = $this->s > 0 ? '<li><a href="'.$this->url.'&page=1&query='.$q.'&by='.$b.'&type='.$t.'&sort='.$sort.'&order='.$order.'">First</a></li>'.$r : $r;
-			$r = '<ul class="tern_members_pagination tern_wp_pagination">' . $r . '</ul>';
+			$r = '<ul class="tern_members_pagination tern_wp_pagination tern_pagination">' . $r . '</ul>';
 		}
 		$m = '.';
 		if($t == 'alpha') {
