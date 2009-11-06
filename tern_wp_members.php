@@ -79,8 +79,8 @@ require_once(ABSPATH.'wp-content/plugins/members-list/ternstyle/class/arrays.php
 //                                **                           **                                 //
 //                                *******************************                                 //
 add_action('init','tern_wp_members_actions');
-add_action('wp_print_scripts','tern_wp_members_js');
-add_action('wp_print_styles','tern_wp_members_scripts');
+add_action('init','tern_wp_members_js');
+add_action('init','tern_wp_members_scripts');
 add_action('admin_menu','tern_wp_members_menu');
 //                                *******************************                                 //
 //________________________________** ACTIONS                   **_________________________________//
