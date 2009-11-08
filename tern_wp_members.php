@@ -4,7 +4,7 @@ Plugin Name: Members List
 Plugin URI: http://www.ternstyle.us/products/plugins/wordpress/wordpress-members-plugin
 Description: List your members with pagination and search capabilities.
 Author: Matthew Praetzel
-Version: 2.7
+Version: 2.8.1
 Author URI: http://www.ternstyle.us/
 Licensing : http://www.ternstyle.us/license.html
 */
@@ -18,7 +18,7 @@ Licensing : http://www.ternstyle.us/license.html
 ////	Account:
 ////		Added on January 29th 2009
 ////	Version:
-////		2.7
+////		2.8.1
 ////
 ////	Written by Matthew Praetzel. Copyright (c) 2009 Matthew Praetzel.
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -79,8 +79,9 @@ require_once(ABSPATH.'wp-content/plugins/members-list/ternstyle/class/arrays.php
 //                                **                           **                                 //
 //                                *******************************                                 //
 add_action('init','tern_wp_members_actions');
-add_action('init','tern_wp_members_js');
 add_action('init','tern_wp_members_scripts');
+add_action('init','tern_wp_members_js');
+add_action('wp_print_scripts','tern_wp_members_js_root');
 add_action('admin_menu','tern_wp_members_menu');
 //                                *******************************                                 //
 //________________________________** ACTIONS                   **_________________________________//
@@ -181,7 +182,9 @@ function tern_wp_members_js() {
 		wp_enqueue_script('TableDnD',get_bloginfo('home').'/wp-content/plugins/members-list/js/jquery.tablednd_0_5.js.php',array('jquery'),'0.5');
 		wp_enqueue_script('members-list',get_bloginfo('home').'/wp-content/plugins/members-list/js/members-list.js');
 	}
-	echo '<script type="text/javascript">var tern_wp_root = "'.get_bloginfo('home').'";</script>';
+}
+function tern_wp_members_js_root() {
+	echo '<script type="text/javascript">var tern_wp_root = "'.get_bloginfo('home').'";</script>'."\n";
 }
 //                                *******************************                                 //
 //________________________________** MENUS                     **_________________________________//
