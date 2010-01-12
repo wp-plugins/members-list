@@ -4,7 +4,7 @@ Plugin Name: Members List
 Plugin URI: http://www.ternstyle.us/products/plugins/wordpress/wordpress-members-plugin
 Description: List your members with pagination and search capabilities.
 Author: Matthew Praetzel
-Version: 2.9
+Version: 2.9.1
 Author URI: http://www.ternstyle.us/
 Licensing : http://www.ternstyle.us/license.html
 */
@@ -18,7 +18,7 @@ Licensing : http://www.ternstyle.us/license.html
 ////	Account:
 ////		Added on January 29th 2009
 ////	Version:
-////		2.9
+////		2.9.1
 ////
 ////	Written by Matthew Praetzel. Copyright (c) 2009 Matthew Praetzel.
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -633,17 +633,14 @@ class tern_members {
 		$o = $this->wp->getOption('tern_wp_members',$tern_wp_members_defaults);
 		//
 		$r = '<div id="tern_members">';
-		if($a['search'] or in_array('search',$a)) {
+		if($a['search'] or in_array('search',$a,true)) {
 			$r .= $this->search();
 		}
-		if($a['alpha'] or in_array('alpha',$a)) {
+		if($a['alpha'] or in_array('alpha',$a,true)) {
 			$r .= $this->alpha();
 		}
 		$r .= $this->viewing($a);
-		//if($a['pagination'] or in_array('pagination',$a)) {
-		//	$r .= $this->pagination();
-		//}
-		if($a['sort'] or in_array('sort',$a)) {
+		if($a['sort'] or in_array('sort',$a,true)) {
 			$r .= $this->sortby();
 		}
 		$r .= '<ul class="tern_wp_members_list">';
@@ -658,7 +655,7 @@ class tern_members {
 			}
 		}
 		$r .= '</ul>';
-		if($a['pagination2'] or in_array('pagination2',$a)) {
+		if($a['pagination2'] or in_array('pagination2',$a,true)) {
 			$r .= $this->pagination();
 		}
 		$r .= '</div>';
@@ -854,13 +851,14 @@ class tern_members {
 		return $r;
 	}
 	function viewing($a,$e=false) {
+		$this->scope();
 		$v = $this->total > 0 ? (($this->s*$this->num)+1) : '0';
 		$m = '.';
 		if($t == 'alpha') {
 			$m = ' whose last names begin with the letter "'.strtoupper($q).'".';
 		}
 		$r = '<div class="tern_members_view">Now viewing <b>' . $v . '</b> through <b>' . $this->e . '</b> of <b>'.$this->total.'</b> members found'.$m;
-		if($a['pagination'] or in_array('pagination',$a)) {
+		if($a['pagination'] or in_array('pagination',$a,true)) {
 			$r .= $this->pagination();
 		}
 		$r .= '</div>';
