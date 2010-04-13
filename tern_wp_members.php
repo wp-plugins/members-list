@@ -4,7 +4,7 @@ Plugin Name: Members List
 Plugin URI: http://www.ternstyle.us/products/plugins/wordpress/wordpress-members-plugin
 Description: List your members with pagination and search capabilities.
 Author: Matthew Praetzel
-Version: 2.9.1
+Version: 2.9.4
 Author URI: http://www.ternstyle.us/
 Licensing : http://www.ternstyle.us/license.html
 */
@@ -18,7 +18,7 @@ Licensing : http://www.ternstyle.us/license.html
 ////	Account:
 ////		Added on January 29th 2009
 ////	Version:
-////		2.9.1
+////		2.9.4
 ////
 ////	Written by Matthew Praetzel. Copyright (c) 2009 Matthew Praetzel.
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -37,8 +37,10 @@ $tern_wp_members_defaults = array(
 	'meta'		=>	'',
 	'url'		=>	get_bloginfo('home').'/members',
 	'gravatars'	=>	1,
+	'hide_email'	=>	0,
 	'hide'		=>	0,
 	'hidden'	=>	array(0),
+	'noun'		=>	'members',
 	'fields'	=>	array(
 		'User Name'		=>	array(
 			'name'		=>	'user_nicename',
@@ -62,6 +64,7 @@ $tern_wp_meta_fields = array(
 $tern_wp_members_fields = array(
 	'User Name'		=>	'user_nicename',
 	'Email Address'	=>	'user_email',
+	'Display Name'	=>	'display_name',
 	'URL'			=>	'user_url'
 );
 $tern_wp_user_fields = array('ID','user_login','user_pass','user_nicename','user_email','user_url','user_registered','user_activation_key','user_status','display_name');
@@ -237,8 +240,22 @@ function tern_wp_members_options() {
 			<tr valign="top">
 				<th scope="row"><label for="url">URL for your members page</label></th>
 				<td>
-					<input type="text" name="url" class="regular-text" value="<?=$o['url'];?>" />
+					<input type="text" name="url" class="regular-text" value="<?php echo $o['url']; ?>" />
 					<span class="setting-description">http://blog.ternstyle.us/members</span>
+				</td>
+			</tr>
+			<tr valign="top">
+				<th scope="row"><label for="noun">Use a word other than "Members" on the front-end</label></th>
+				<td>
+					<input type="text" name="noun" class="regular-text" value="<?php echo $o['noun']; ?>" />
+					<span class="setting-description">i.e. "Clients" or "Users"</span>
+				</td>
+			</tr>
+			<tr valign="top">
+				<th scope="row"><label for="hide_email">Hide email addresses from anyone who is not logged in:</label></th>
+				<td>
+					<input type="radio" name="hide_email" value="1" <?php if($o['hide_email']) { echo 'checked'; } ?> /> yes
+					<input type="radio" name="hide_email" value="0" <?php if(!$o['hide_email']) { echo 'checked'; } ?> /> no
 				</td>
 			</tr>
 			<tr valign="top">
@@ -289,7 +306,7 @@ function tern_wp_members_options() {
 			<tr valign="top">
 				<th scope="row"><label for="meta">Meta fields to search by</label></th>
 				<td>
-					<textarea name="meta" style="width:100%;"><?=$o['meta'];?></textarea><br />
+					<textarea name="meta" style="width:100%;"><?php echo $o['meta']; ?></textarea><br />
 					<span class="setting-description">e.g. occupation,employer,department,city,state,zip,country</span>
 				</td>
 			</tr>
@@ -304,7 +321,7 @@ function tern_wp_members_options() {
 		<p class="submit"><input type="submit" name="submit" class="button-primary" value="Save Changes" /></p>
 		<input type="hidden" id="page" name="page" value="Members List Settings" />
 		<input type="hidden" name="action" value="update" />
-		<input type="hidden" id="_wpnonce" name="_wpnonce" value="<?=wp_create_nonce('tern_wp_members_nonce');?>" />
+		<input type="hidden" id="_wpnonce" name="_wpnonce" value="<?php echo wp_create_nonce('tern_wp_members_nonce'); ?>" />
 		<input type="hidden" name="_wp_http_referer" value="<?php wp_get_referer(); ?>" />
 	</form>
 </div>
@@ -372,7 +389,7 @@ function tern_wp_members_markup() {
 				<input type="hidden" id="page" name="page" value="Configure Mark-Up" />
 				<input type="submit" value="Add New Field" class="button" />
 				<input type="hidden" name="action" value="add" />
-				<input type="hidden" id="_wpnonce" name="_wpnonce" value="<?=wp_create_nonce('tern_wp_members_nonce');?>" />
+				<input type="hidden" id="_wpnonce" name="_wpnonce" value="<?php echo wp_create_nonce('tern_wp_members_nonce'); ?>" />
 				<input type="hidden" name="_wp_http_referer" value="<?php wp_get_referer(); ?>" />
 			</p>
 		</form>
@@ -399,24 +416,24 @@ function tern_wp_members_markup() {
 						foreach($o['fields'] as $k => $v) {
 							$d = empty($d) ? ' class="alternate"' : '';
 					?>
-							<tr id='field-<?=$v['name'];?>'<?=$d;?>>
-								<th scope='row' class='check-column'><input type='checkbox' name='fields[]' id='field_<?=$v['name'];?>' value='<?=$v['name'];?>' /></th>
+							<tr id='field-<?php echo $v['name']; ?>'<?php echo $d; ?>>
+								<th scope='row' class='check-column'><input type='checkbox' name='fields[]' id='field_<?php echo $v['name'];?>' value='<?php echo $v['name'];?>' /></th>
 								<td class="field column-field">
-									<input type="hidden" name="field_names%5B%5D" value="<?=$v['name'];?>" />
-									<strong><?=$v['name'];?></strong><br />
+									<input type="hidden" name="field_names%5B%5D" value="<?php echo $v['name'];?>" />
+									<strong><?php echo $v['name'];?></strong><br />
 									<div class="row-actions">
-										<span class='edit tern_memebrs_edit'><a href="javascript:tern_members_editField('field-<?=$v['name'];?>');">Edit</a> | </span>
-										<span class='edit'><a href="admin.php?page=Configure%20Mark-Up&fields%5B%5D=<?=$v['name'];?>&action=remove&_wpnonce=<?=wp_create_nonce('tern_wp_members_nonce');?>">Remove</a></span>
+										<span class='edit tern_memebrs_edit'><a href="javascript:tern_members_editField('field-<?php echo $v['name'];?>');">Edit</a> | </span>
+										<span class='edit'><a href="admin.php?page=Configure%20Mark-Up&fields%5B%5D=<?php echo $v['name'];?>&action=remove&_wpnonce=<?php echo wp_create_nonce('tern_wp_members_nonce');?>">Remove</a></span>
 									</div>
 								</td>
 								<td class="name column-name">
-									<input type="text" name="field_titles%5B%5D" class="tern_members_fields hidden" value="<?=$k;?>" /><br class="tern_members_fields hidden" />
-									<input type="button" value="Update Field" onclick="tern_members_renderField('field-<?=$v['name'];?>');return false;" class="tern_members_fields hidden button" />
-									<span class="tern_members_fields field_titles"><?=$k;?></span>
+									<input type="text" name="field_titles%5B%5D" class="tern_members_fields hidden" value="<?php echo $k;?>" /><br class="tern_members_fields hidden" />
+									<input type="button" value="Update Field" onclick="tern_members_renderField('field-<?php echo $v['name'];?>');return false;" class="tern_members_fields hidden button" />
+									<span class="tern_members_fields field_titles"><?php echo $k;?></span>
 								</td>
 								<td class="markup column-markup">
-									<textarea name="field_markups%5B%5D" class="tern_members_fields hidden" rows="4" cols="10"><?=$v['markup'];?></textarea><br class="tern_members_fields hidden" />
-									<input type="button" value="Update Field" onclick="tern_members_renderField('field-<?=$v['name'];?>');return false;" class="tern_members_fields hidden button" />
+									<textarea name="field_markups%5B%5D" class="tern_members_fields hidden" rows="4" cols="10"><?php echo $v['markup'];?></textarea><br class="tern_members_fields hidden" />
+									<input type="button" value="Update Field" onclick="tern_members_renderField('field-<?php echo $v['name'];?>');return false;" class="tern_members_fields hidden button" />
 									<span class="tern_members_fields field_markups"><?php echo htmlentities($v['markup']); ?></span>
 								</td>
 							</tr>
@@ -427,7 +444,7 @@ function tern_wp_members_markup() {
 			</table>
 			<input type="hidden" name="action" value="update" />
 			<input type="hidden" id="page" name="page" value="Configure Mark-Up" />
-			<input type="hidden" id="_wpnonce" name="_wpnonce" value="<?=wp_create_nonce('tern_wp_members_nonce');?>" />
+			<input type="hidden" id="_wpnonce" name="_wpnonce" value="<?php echo wp_create_nonce('tern_wp_members_nonce');?>" />
 			<input type="hidden" name="_wp_http_referer" value="<?php wp_get_referer(); ?>" />
 		</form>
 		<h3>Your Mark-Up will look like this:</h3>
@@ -554,21 +571,21 @@ function tern_wp_members_list() {
 		$nu = $current_user;
 		$e = $u->ID == $nu->ID ? 'profile.php' : 'user-edit.php?user_id='.$u->ID.'&#038;wp_http_referer='.wp_get_referer();
 ?>
-		<tr id='user-<?=$u->ID;?>'<?=$d;?>>
-			<th scope='row' class='check-column'><input type='checkbox' name='users[]' id='user_<?=$u->ID;?>' class='administrator' value='<?=$u->ID;?>' /></th>
+		<tr id='user-<?php echo $u->ID;?>'<?php echo $d;?>>
+			<th scope='row' class='check-column'><input type='checkbox' name='users[]' id='user_<?php echo $u->ID;?>' class='administrator' value='<?php echo $u->ID;?>' /></th>
 			<td class="username column-username">
-				<?=get_avatar($u->ID,32);?>
+				<?php echo get_avatar($u->ID,32);?>
 				<strong>
-					<a href="<?=$e;?>"><?=$u->user_nicename;?></a>
+					<a href="<?php echo $e;?>"><?php echo $u->user_nicename;?></a>
 				</strong><br />
 				<div class="row-actions">
-					<span class='edit'><a href="admin.php?page=Edit%20Members%20List&users%5B%5D=<?=$u->ID;?>&action=show&_wpnonce=<?=wp_create_nonce('tern_wp_members_nonce');?>">Show</a> | </span>
-					<span class='edit'><a href="admin.php?page=Edit%20Members%20List&users%5B%5D=<?=$u->ID;?>&action=hide&_wpnonce=<?=wp_create_nonce('tern_wp_members_nonce');?>">Hide</a></span>
+					<span class='edit'><a href="admin.php?page=Edit%20Members%20List&users%5B%5D=<?php echo $u->ID;?>&action=show&_wpnonce=<?php echo wp_create_nonce('tern_wp_members_nonce');?>">Show</a> | </span>
+					<span class='edit'><a href="admin.php?page=Edit%20Members%20List&users%5B%5D=<?php echo $u->ID;?>&action=hide&_wpnonce=<?php echo wp_create_nonce('tern_wp_members_nonce');?>">Hide</a></span>
 				</div>
 			</td>
-			<td class="name column-name"><?=$u->first_name.' '.$u->last_name;?></td>
-			<td class="email column-email"><a href='mailto:<?=$u->user_email;?>' title='e-mail: <?=$u->user_email;?>'><?=$u->user_email;?></a></td>
-			<td class="role column-role"><?=$r;?></td>
+			<td class="name column-name"><?php echo $u->first_name.' '.$u->last_name;?></td>
+			<td class="email column-email"><a href='mailto:<?php echo $u->user_email;?>' title='e-mail: <?php echo $u->user_email;?>'><?php echo $u->user_email;?></a></td>
+			<td class="role column-role"><?php echo $r;?></td>
 			<td class="role column-displayed"><?php if(!empty($o['hidden']) and in_array($u->ID,$o['hidden'])) { echo 'no'; } else { echo 'yes'; } ?></td>
 		</tr>
 <?php
@@ -585,7 +602,7 @@ function tern_wp_members_list() {
 						<option value="hide">Hide</option>
 					</select>
 					<input type="hidden" id="page" name="page" value="Edit Members List" />
-					<input type="hidden" id="_wpnonce" name="_wpnonce" value="<?=wp_create_nonce('tern_wp_members_nonce');?>" />
+					<input type="hidden" id="_wpnonce" name="_wpnonce" value="<?php echo wp_create_nonce('tern_wp_members_nonce');?>" />
 					<input type="hidden" name="_wp_http_referer" value="<?php wp_get_referer(); ?>" />
 					<input type="submit" value="Apply" name="doaction2" id="doaction2" class="button-secondary action" />
 				</div>
@@ -798,12 +815,13 @@ class tern_members {
 		return $r;
 	}
 	function search($e=false) {
-		global $getOPTS,$tern_wp_members_fields,$tern_wp_meta_fields;
+		global $getOPTS,$tern_wp_members_fields,$tern_wp_meta_fields,$tern_wp_members_defaults;
+		$p = $this->wp->getOption('tern_wp_members',$tern_wp_members_defaults);
 		$a = array('a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z');
 		$o = array_merge($tern_wp_meta_fields,$tern_wp_members_fields,$this->meta_fields);
 		$r = '<div class="tern_members_search">
 		<form method="get" action="'.$this->url.'">
-			<h2>Search Our Members:</h2>
+			<h2>Search Our '.ucwords($p['noun']).':</h2>
 			<input type="text" id="query" name="query" class="blur" value="search..." />
 			by '.$getOPTS->selectPaired($o,'by','by','','','All Fields',array($_REQUEST['by'])).' 
 			<input type="hidden" name="p" value="'.$_REQUEST['p'].'" />
@@ -851,13 +869,15 @@ class tern_members {
 		return $r;
 	}
 	function viewing($a,$e=false) {
+		global $tern_wp_members_defaults;
+		$o = $this->wp->getOption('tern_wp_members',$tern_wp_members_defaults);
 		$this->scope();
 		$v = $this->total > 0 ? (($this->s*$this->num)+1) : '0';
 		$m = '.';
 		if($t == 'alpha') {
 			$m = ' whose last names begin with the letter "'.strtoupper($q).'".';
 		}
-		$r = '<div class="tern_members_view">Now viewing <b>' . $v . '</b> through <b>' . $this->e . '</b> of <b>'.$this->total.'</b> members found'.$m;
+		$r = '<div class="tern_members_view">Now viewing <b>' . $v . '</b> through <b>' . $this->e . '</b> of <b>'.$this->total.'</b> '.$o['noun'].' found'.$m;
 		if($a['pagination'] or in_array('pagination',$a,true)) {
 			$r .= $this->pagination();
 		}
@@ -870,11 +890,14 @@ class tern_members {
 		$o = $this->wp->getOption('tern_wp_members',$tern_wp_members_defaults);
 		$s = '<li>'."\n    ";
 		if($o['gravatars']) {
-			$s .= '<a class="tern_wp_member_gravatar" href="'.get_bloginfo('url').'/?author='.$u->ID.'">'."\n        ".get_avatar($u->ID,60)."\n    ".'</a>'."\n    ";
+			$s .= '<a class="tern_wp_member_gravatar" href="'.get_author_posts_url($u->ID).'">'."\n        ".get_avatar($u->ID,60)."\n    ".'</a>'."\n    ";
 		}
 		$s .= '<div class="tern_wp_member_info">';
 		foreach($o['fields'] as $k => $v) {
-			$s .= "\n        ".str_replace('%author_url%',get_bloginfo('url').'/?author='.$u->ID,str_replace('%value%',$u->$v['name'],$v['markup']));
+			if($k == 'user_email' and $o['hide_email'] and !is_user_logged_in()) {
+				continue;
+			}
+			$s .= "\n        ".str_replace('%author_url%',get_author_posts_url($u->ID),str_replace('%value%',$u->$v['name'],$v['markup']));
 		}
 		return $s."\n    ".'</div>'."\n".'</li>';
 	}
