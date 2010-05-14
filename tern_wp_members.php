@@ -4,7 +4,7 @@ Plugin Name: Members List
 Plugin URI: http://www.ternstyle.us/products/plugins/wordpress/wordpress-members-plugin
 Description: List your members with pagination and search capabilities.
 Author: Matthew Praetzel
-Version: 2.9.4
+Version: 2.9.5
 Author URI: http://www.ternstyle.us/
 Licensing : http://www.ternstyle.us/license.html
 */
@@ -18,7 +18,7 @@ Licensing : http://www.ternstyle.us/license.html
 ////	Account:
 ////		Added on January 29th 2009
 ////	Version:
-////		2.9.4
+////		2.9.5
 ////
 ////	Written by Matthew Praetzel. Copyright (c) 2009 Matthew Praetzel.
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -464,9 +464,10 @@ function tern_wp_members_list() {
 	global $wp_roles,$getWP,$tern_wp_msg,$tern_wp_members_defaults,$current_user;
 	get_currentuserinfo();
 	$o = $getWP->getOption('tern_wp_members',$tern_wp_members_defaults);
-	$l = new tern_members();
-	$_GET['order'] = 'desc';
-	$m = $l->query('all');
+	$usersearch = isset($_GET['usersearch']) ? $_GET['usersearch'] : null;
+	$userspage = isset($_GET['userspage']) ? $_GET['userspage'] : null;
+	$role = isset($_GET['role']) ? $_GET['role'] : null;
+	$wp_user_search = new WP_User_Search($usersearch, $userspage, $role);
 ?>
 	<div class="wrap">
 		<div id="icon-users" class="icon32"><br /></div>
@@ -525,6 +526,9 @@ function tern_wp_members_list() {
 		</form>
 		<form id="posts-filter" action="" method="get">
 			<div class="tablenav">
+				<?php if($wp_user_search->results_are_paged()) { ?>
+					<div class="tablenav-pages"><?php $wp_user_search->page_links(); ?></div>
+				<?php } ?>
 				<div class="alignleft actions">
 					<select name="action">
 						<option value="" selected="selected">Bulk Actions</option>
@@ -560,7 +564,8 @@ function tern_wp_members_list() {
 <?php
 	//
 	$c = 0;
-	foreach($m as $u) {
+	//foreach($m as $u) {
+	foreach($wp_user_search->get_results() as $u) {
 		$u = new WP_User($u);
 		$r = $u->roles;
 		$r = array_shift($r);
@@ -618,6 +623,10 @@ function tern_wp_members_list() {
 //                                **                           **                                 //
 //                                *******************************                                 //
 function tern_wp_members_shortcode($c) {
+	global $more;
+	if(!is_page() or !is_post()) {
+		return;
+	}
 	$m = new tern_members;
 	$i = preg_match("/([\s\S]*)([\[]{1}(members list){1}(:)?([^\]]*)([\]]{1}))([\s\S]*)/i",$c,$r);
 	if($i) {
