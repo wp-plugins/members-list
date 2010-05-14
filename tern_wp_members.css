@@ -13,47 +13,52 @@
 -----------------------*/
 textarea.tern_members_fields { width:100%; }
 /*-----------------------
+	MEMBERS LIST
+-----------------------*/
+#tern_members { color:#333; }
+#tern_members, #tern_members * { text-align:left; }
+/*-----------------------
+	LISTS
+-----------------------*/
+#tern_members ul, #tern_members li { display:inline;margin:0;padding:0;list-style:none;text-indent:0; }
+/*-----------------------
+	BORDERS
+-----------------------*/
+.tern_members_search, .tern_members_alpha, .tern_members_view, .tern_members_sort { border-bottom:1px dashed #ccc; }
+.tern_members_search, .tern_members_alpha, .tern_members_view, #tern_members .tern_pagination, .tern_members_sort, .tern_wp_members_list { clear:both;padding:20px 0; }
+#tern_members .tern_pagination { border-top:1px dashed #ccc;margin-top:20px; }
+#tern_members .tern_members_view .tern_pagination { border:0;margin:0;padding-bottom:0; }
+/*-----------------------
 	SEARCH
 -----------------------*/
-#tern_members_search, #tern_members_sort { border-bottom:1px dashed #ccc;padding:20px 0px; }
-#tern_members_search form { margin-bottom:10px; }
-#tern_members_search span { line-height:10px;font-size:10px;font-style:italic;color:#333; }
-#tern_members_search ul.tern_members_pagination, #tern_members_search ul.tern_members_pagination li { display:inline;margin:0px;padding:0px; }
-#tern_members_search ul.tern_members_pagination li { padding:0px 5px; }
+.tern_members_search h2 { margin:10px 0; }
+#tern_members input, #tern_members select { font-size:16px; }
+#tern_members .blur { color:#ccc; }
+#tern_members .focus { color:#333; }
+/*-----------------------
+	ALPHA
+-----------------------*/
+.tern_members_alpha span { font-size:10px;font-style:italic; }
+.tern_members_alpha a { display:inline-block;padding:0 8px 0 0; }
 /*-----------------------
 	PAGINATION
 -----------------------*/
-#tern_members_pagination { margin:20px 0px; }
-#tern_members_pagination ul.tern_members_pagination { display:block;width:100%;border:1px solid #ccc;margin:0px;padding:0px;list-style:none; }
-#tern_members_pagination ul.tern_members_pagination li { display:inline;border-right:1px solid #ccc;padding:0px 8px;margin:0px;line-height:18px; }
-#tern_members_pagination ul.tern_members_pagination li.tern_members_pagination_current a { color:#333;text-decoration:none; }
-.tern_members_current { color:#000; }
+#tern_members .tern_pagination { display:block; }
+.tern_pagination a { display:inline-block;background:#f6f6f6;border:1px solid #ccc;margin-right:6px;padding:0 4px;line-height:22px;color:#666;text-decoration:none; }
+.tern_pagination_current a { color:#ccc; }
 /*-----------------------
 	SORT
 -----------------------*/
-#tern_members_sort { margin-bottom:20px; }
-#tern_members_sort label { float:left;padding-right:10px;font-weight:bold; }
-#tern_members_sort ul, #tern_members_sort li { display:block;float:left;margin:0px;padding:0px;list-style:none; }
-#tern_members_sort ul { margin-bottom:20px; }
-#tern_members_sort li { padding:0px 10px; }
-#tern_members_sort li a { text-decoration:none; }
-#tern_members_sort li.tern_members_sorted_u a { padding-left:20px;background:transparent url(/wp-content/plugins/members-list/images/up.gif) no-repeat center left;color:#333; }
-#tern_members_sort li.tern_members_sorted_d a { padding-left:20px;background:transparent url(/wp-content/plugins/members-list/images/down.gif) no-repeat center left;color:#333; }
+.tern_members_sort label { padding-right:10px;font-weight:bold; }
+#tern_members .tern_members_sort li { padding:0px 6px; }
+.tern_members_sort li a { text-decoration:none; }
+.tern_members_sort li.tern_members_sorted_u a { padding-left:20px;background:transparent url(images/up.gif) no-repeat center left;color:#333; }
+.tern_members_sort li.tern_members_sorted_d a { padding-left:20px;background:transparent url(images/down.gif) no-repeat center left;color:#333; }
 /*-----------------------
 	LIST
 -----------------------*/
-.tern_wp_members_list, .tern_wp_members_list li { display:block;float:left;width:100%;margin:0px;padding:0px;list-style:none;text-align:left; }
-.tern_wp_members_list li { margin-bottom:15px; }
-.tern_wp_members_list a.tern_wp_member_gravatar { display:block;float:left;width:60px;margin:0px 10px; }
-.tern_wp_member_gravatar img { width:60px;height:60px;border:1px solid #ccc;padding:1px;margin:0px 10px 0px 0px; }
-.tern_wp_member_info { float:left;width:200px;font-size:12px;line-height:14px; }
-.tern_wp_member_info  div { display:inline; }
-.tern_wp_members_list h3, .tern_wp_members_list a { display:block;width:100%;margin:0px;padding:0px; }
-.tern_wp_members_list div.tern_wp_members_last_name a { display:inline;width:auto;padding-left:2px;color:#333;text-decoration:none; }
-.tern_wp_members_list div.tern_wp_members_first_name a { display:inline;width:auto;color:#333;text-decoration:none; }
-.tern_wp_members_list h3 a { margin:4px 0px 5px 0px;font-size:16px;text-decoration:none; }
-/*-----------------------
-	COLORS
------------------------*/
-.tern_wp_members_list h3 a { color:#333; }
-.tern_members_pagination a, #tern_members_sort a, .tern_wp_members_list a { color:#0066cc; }
+#tern_members .tern_wp_members_list, #tern_members .tern_wp_members_list li { display:block;width:100%; }
+#tern_members .tern_wp_members_list li { clear:both;height:60px;padding-top:20px; }
+html>/**/body #tern_members .tern_wp_members_list li { height:auto;min-height:60px; }
+.tern_wp_member_gravatar img { float:left;width:60px;height:60px;border:1px solid #ccc;padding:1px;margin:0px 10px 0px 0px; }
+#tern_members .tern_wp_members_list h3 { margin:0; }
