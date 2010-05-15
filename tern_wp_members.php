@@ -4,7 +4,7 @@ Plugin Name: Members List
 Plugin URI: http://www.ternstyle.us/products/plugins/wordpress/wordpress-members-plugin
 Description: List your members with pagination and search capabilities.
 Author: Matthew Praetzel
-Version: 2.9.5
+Version: 2.9.6
 Author URI: http://www.ternstyle.us/
 Licensing : http://www.ternstyle.us/license.html
 */
@@ -18,7 +18,7 @@ Licensing : http://www.ternstyle.us/license.html
 ////	Account:
 ////		Added on January 29th 2009
 ////	Version:
-////		2.9.5
+////		2.9.6
 ////
 ////	Written by Matthew Praetzel. Copyright (c) 2009 Matthew Praetzel.
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -625,7 +625,7 @@ function tern_wp_members_list() {
 function tern_wp_members_shortcode($c) {
 	global $more;
 	if(!is_page() or !is_post()) {
-		return;
+		return $c;
 	}
 	$m = new tern_members;
 	$i = preg_match("/([\s\S]*)([\[]{1}(members list){1}(:)?([^\]]*)([\]]{1}))([\s\S]*)/i",$c,$r);
