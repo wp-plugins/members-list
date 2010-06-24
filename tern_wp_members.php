@@ -4,7 +4,7 @@ Plugin Name: Members List
 Plugin URI: http://www.ternstyle.us/products/plugins/wordpress/wordpress-members-plugin
 Description: List your members with pagination and search capabilities.
 Author: Matthew Praetzel
-Version: 2.9.8
+Version: 3.0
 Author URI: http://www.ternstyle.us/
 Licensing : http://www.ternstyle.us/license.html
 */
@@ -101,8 +101,8 @@ function tern_wp_members_menu() {
 	if(function_exists('add_menu_page')) {
 		add_menu_page('Members List','Members List',10,__FILE__,'tern_wp_members_options');
 		add_submenu_page(__FILE__,'Members List','Settings',10,__FILE__,'tern_wp_members_options');
-		add_submenu_page(__FILE__,'Configure Mark-Up','Configure Mark-Up',10,'Configure Mark-Up','tern_wp_members_markup');
-		add_submenu_page(__FILE__,'Edit Members','Edit Members',10,'Edit Members List','tern_wp_members_list');
+		add_submenu_page(__FILE__,'Configure Mark-Up','Configure Mark-Up',10,'members-list-configure-mark-up','tern_wp_members_markup');
+		add_submenu_page(__FILE__,'Edit Members','Edit Members',10,'members-list-edit-members-list','tern_wp_members_list');
 	}
 }
 //                                *******************************                                 //
@@ -111,12 +111,12 @@ function tern_wp_members_menu() {
 //                                **                           **                                 //
 //                                *******************************                                 //
 function tern_wp_members_styles() {
-	if(!is_admin() or $_REQUEST['page'] == 'Configure Mark-Up') {
+	if(!is_admin() or $_REQUEST['page'] == 'members-list-configure-mark-up') {
 		wp_enqueue_style('tern_wp_members_css',get_bloginfo('wpurl').'/wp-content/plugins/members-list/tern_wp_members.css');
 	}
 }
 function tern_wp_members_js() {
-	if($_REQUEST['page'] == 'Configure Mark-Up') {
+	if($_REQUEST['page'] == 'members-list-configure-mark-up') {
 		wp_enqueue_script('TableDnD',get_bloginfo('wpurl').'/wp-content/plugins/members-list/js/jquery.tablednd_0_5.js.php',array('jquery'),'0.5');
 		wp_enqueue_script('members-list',get_bloginfo('wpurl').'/wp-content/plugins/members-list/js/members-list.js');
 	}
@@ -137,7 +137,7 @@ function tern_wp_members_actions() {
 	get_currentuserinfo();
 	$o = $getWP->getOption('tern_wp_members',$tern_wp_members_defaults);
 	//Configure Mark-Up Page Actions
-	if($_REQUEST['page'] == 'Configure Mark-Up') {
+	if($_REQUEST['page'] == 'members-list-configure-mark-up') {
 		if(wp_verify_nonce($_REQUEST['_wpnonce'],'tern_wp_members_nonce')) {
 			switch($_REQUEST['action']) {
 				//update all fields
@@ -186,12 +186,12 @@ function tern_wp_members_actions() {
 		}
 	}
 	//Settings
-	elseif($_REQUEST['page'] == 'Members List Settings') {
+	elseif($_REQUEST['page'] == 'members-list/tern_wp_members.php') {
 		$_POST['meta'] = empty($_POST['meta']) ? '' : $_POST['meta'];
 		$getWP->updateOption('tern_wp_members',$tern_wp_members_defaults,'tern_wp_members_nonce');
 	}
 	//Members
-	elseif($_REQUEST['page'] == 'Edit Members List') {
+	elseif($_REQUEST['page'] == 'members-list-edit-members-list') {
 		$a = empty($_REQUEST['action']) ? $_REQUEST['action2'] : $_REQUEST['action'];
 		if(wp_verify_nonce($_REQUEST['_wpnonce'],'tern_wp_members_nonce') and !empty($a)) {
 			$r = array();
@@ -319,7 +319,7 @@ function tern_wp_members_options() {
 			</tr>
 		</table>
 		<p class="submit"><input type="submit" name="submit" class="button-primary" value="Save Changes" /></p>
-		<input type="hidden" id="page" name="page" value="Members List Settings" />
+		<input type="hidden" id="page" name="page" value="<?php echo $_REQUEST['page']; ?>" />
 		<input type="hidden" name="action" value="update" />
 		<input type="hidden" id="_wpnonce" name="_wpnonce" value="<?php echo wp_create_nonce('tern_wp_members_nonce'); ?>" />
 		<input type="hidden" name="_wp_http_referer" value="<?php wp_get_referer(); ?>" />
@@ -386,7 +386,7 @@ function tern_wp_members_markup() {
 					}
 					echo $getOPTS->selectTiered($a,1,0,'new_field','new_field','Add New Field','',false);
 				?>
-				<input type="hidden" id="page" name="page" value="Configure Mark-Up" />
+				<input type="hidden" id="page" name="page" value="<?php echo $_REQUEST['page']; ?>" />
 				<input type="submit" value="Add New Field" class="button" />
 				<input type="hidden" name="action" value="add" />
 				<input type="hidden" id="_wpnonce" name="_wpnonce" value="<?php echo wp_create_nonce('tern_wp_members_nonce'); ?>" />
@@ -423,7 +423,7 @@ function tern_wp_members_markup() {
 									<strong><?php echo $v['name'];?></strong><br />
 									<div class="row-actions">
 										<span class='edit tern_memebrs_edit'><a href="javascript:tern_members_editField('field-<?php echo $v['name'];?>');">Edit</a> | </span>
-										<span class='edit'><a href="admin.php?page=Configure%20Mark-Up&fields%5B%5D=<?php echo $v['name'];?>&action=remove&_wpnonce=<?php echo wp_create_nonce('tern_wp_members_nonce');?>">Remove</a></span>
+										<span class='edit'><a href="admin.php?page=members-list-configure-mark-up&fields%5B%5D=<?php echo $v['name'];?>&action=remove&_wpnonce=<?php echo wp_create_nonce('tern_wp_members_nonce');?>">Remove</a></span>
 									</div>
 								</td>
 								<td class="name column-name">
@@ -443,7 +443,7 @@ function tern_wp_members_markup() {
 				</tbody>
 			</table>
 			<input type="hidden" name="action" value="update" />
-			<input type="hidden" id="page" name="page" value="Configure Mark-Up" />
+			<input type="hidden" id="page" name="page" value="<?php echo $_REQUEST['page']; ?>" />
 			<input type="hidden" id="_wpnonce" name="_wpnonce" value="<?php echo wp_create_nonce('tern_wp_members_nonce');?>" />
 			<input type="hidden" name="_wp_http_referer" value="<?php wp_get_referer(); ?>" />
 		</form>
@@ -497,7 +497,7 @@ function tern_wp_members_list() {
 						unset($u);
 						$current_role = false;
 						$class = empty($role) ? ' class="current"' : '';
-						$l[] = "<li><a href='admin.php?page=Edit%20Members%20List'$class>".sprintf(__ngettext('All<span class="count">(%s)</span>','All <span class="count">(%s)</span>',$t),number_format_i18n($t)).'</a>';
+						$l[] = "<li><a href='admin.php?page=members-list-edit-members-list'$class>".sprintf(__ngettext('All<span class="count">(%s)</span>','All <span class="count">(%s)</span>',$t),number_format_i18n($t)).'</a>';
 						foreach($wp_roles->get_names() as $s => $name) {
 							if (!isset($a[$s]))
 								continue;
@@ -508,7 +508,7 @@ function tern_wp_members_list() {
 							}
 							$name = translate_with_context($name);
 							$name = sprintf( _c('%1$s <span class="count">(%2$s)</span>|user role with count'),$name,$a[$s]);
-							$l[] = "<li><a href='admin.php?page=Edit%20Members%20List&role=$s'$class>$name</a>";
+							$l[] = "<li><a href='admin.php?page=members-list-edit-members-list&role=$s'$class>$name</a>";
 						}
 						echo implode( " |</li>\n", $l) . '</li>';
 						unset($l);
@@ -520,7 +520,7 @@ function tern_wp_members_list() {
 			<p class="search-box">
 				<label class="hidden" for="user-search-input">Search Users:</label>
 				<input type="text" class="search-input" id="user-search-input" name="query" value="" />
-				<input type="hidden" id="page" name="page" value="Edit Members List" />
+				<input type="hidden" id="page" name="page" value="<?php echo $_REQUEST['page']; ?>" />
 				<input type="submit" value="Search Users" class="button" />
 			</p>
 		</form>
@@ -584,8 +584,8 @@ function tern_wp_members_list() {
 					<a href="<?php echo $e;?>"><?php echo $u->user_nicename;?></a>
 				</strong><br />
 				<div class="row-actions">
-					<span class='edit'><a href="admin.php?page=Edit%20Members%20List&users%5B%5D=<?php echo $u->ID;?>&action=show&_wpnonce=<?php echo wp_create_nonce('tern_wp_members_nonce');?>">Show</a> | </span>
-					<span class='edit'><a href="admin.php?page=Edit%20Members%20List&users%5B%5D=<?php echo $u->ID;?>&action=hide&_wpnonce=<?php echo wp_create_nonce('tern_wp_members_nonce');?>">Hide</a></span>
+					<span class='edit'><a href="admin.php?page=members-list-edit-members-list&users%5B%5D=<?php echo $u->ID;?>&action=show&_wpnonce=<?php echo wp_create_nonce('tern_wp_members_nonce');?>">Show</a> | </span>
+					<span class='edit'><a href="admin.php?page=members-list-edit-members-list&users%5B%5D=<?php echo $u->ID;?>&action=hide&_wpnonce=<?php echo wp_create_nonce('tern_wp_members_nonce');?>">Hide</a></span>
 				</div>
 			</td>
 			<td class="name column-name"><?php echo $u->first_name.' '.$u->last_name;?></td>
@@ -606,7 +606,7 @@ function tern_wp_members_list() {
 						<option value="show">Show</option>
 						<option value="hide">Hide</option>
 					</select>
-					<input type="hidden" id="page" name="page" value="Edit Members List" />
+					<input type="hidden" id="page" name="page" value="<?php echo $_REQUEST['page']; ?>" />
 					<input type="hidden" id="_wpnonce" name="_wpnonce" value="<?php echo wp_create_nonce('tern_wp_members_nonce');?>" />
 					<input type="hidden" name="_wp_http_referer" value="<?php wp_get_referer(); ?>" />
 					<input type="submit" value="Apply" name="doaction2" id="doaction2" class="button-secondary action" />
