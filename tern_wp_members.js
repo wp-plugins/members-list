@@ -9,17 +9,17 @@
 /**************************************************************************************************/
 
 /*-----------------------
-	Variables
------------------------*/
-$ = jQuery;
-/*-----------------------
 	Initialize
 -----------------------*/
-$(document).ready(function () {
-	$('#query').bind('focus',function (){
-		if(this.value=='search...') { this.value='';$('#query').toggleClass('focus'); }
+(function($) {
+		  
+	$(document).ready(function () {
+		$('#query').bind('focus',function (){
+			if(this.value=='search...') { this.value='';$('#query').toggleClass('focus'); }
+		});
+		$('#query').bind('blur',function (){
+			if(this.value=='') { this.value='search...';$('#query').toggleClass('focus'); }
+		});
 	});
-	$('#query').bind('blur',function (){
-		if(this.value=='') { this.value='search...';$('#query').toggleClass('focus'); }
-	});
-});
+
+})(jQuery);
