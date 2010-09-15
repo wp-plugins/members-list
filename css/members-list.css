@@ -1,11 +1,20 @@
 /**************************************************************************************************/
-/***
-/***	TERNSTYLE (TM) WORDPRESS MEMBERS PLUGIN DOCUMENT
-/***	-----------------------------------------------------------------------
-/***	Written by Matthew Praetzel. Copyright (c) 2009 Matthew Praetzel.
-/***	-----------------------------------------------------------------------
-/***	
-/***
+/*
+/*		File:
+/*			members-list.css
+/*		Description:
+/*			This file contains CSS for both administrative and front-end aspects of the plugin.
+/*		Date:
+/*			Added on January 29th 2009
+/*		Copyright:
+/*			Copyright (c) 2009 Matthew Praetzel.
+/*		License:
+/*			License:
+/*			This software is licensed under the terms of the GNU Lesser General Public License v3
+/*			as published by the Free Software Foundation. You should have received a copy of of
+/*			the GNU Lesser General Public License along with this software. In the event that you
+/*			have not, please visit: http://www.gnu.org/licenses/gpl-3.0.txt
+/*
 /**************************************************************************************************/
 
 /*-----------------------
@@ -44,16 +53,16 @@ textarea.tern_members_fields { width:100%; }
 	PAGINATION
 -----------------------*/
 #tern_members .tern_pagination { display:block; }
-.tern_pagination a { display:inline-block;background:#f6f6f6;border:1px solid #ccc;margin-right:6px;padding:0 4px;line-height:22px;color:#666;text-decoration:none; }
-.tern_pagination_current a { color:#ccc; }
+.tern_pagination a, .tern_pagination a:visited { display:inline-block;background:#f6f6f6;border:1px solid #ccc;margin-right:6px;padding:0 4px;line-height:22px;color:#666;text-decoration:none; }
+.tern_pagination_current a, .tern_pagination_current a:visited { color:#ccc; }
 /*-----------------------
 	SORT
 -----------------------*/
 .tern_members_sort label { padding-right:10px;font-weight:bold; }
 #tern_members .tern_members_sort li { padding:0px 6px; }
 .tern_members_sort li a { text-decoration:none; }
-.tern_members_sort li.tern_members_sorted_u a { padding-left:20px;background:transparent url(images/up.gif) no-repeat center left;color:#333; }
-.tern_members_sort li.tern_members_sorted_d a { padding-left:20px;background:transparent url(images/down.gif) no-repeat center left;color:#333; }
+.tern_members_sort li.tern_members_sorted_u a { padding-left:20px;background:transparent url(../images/up.gif) no-repeat center left;color:#333; }
+.tern_members_sort li.tern_members_sorted_d a { padding-left:20px;background:transparent url(../images/down.gif) no-repeat center left;color:#333; }
 /*-----------------------
 	LIST
 -----------------------*/
