@@ -103,6 +103,22 @@ class arrayFixes {
 		}
 		return $r;
 	}
+	function removeEmptyValues($a,$p=true) {
+		$b = array();
+		if(is_array($a)) {
+			foreach($a as $k => $v) {
+				if(!empty($v)) {
+					if($p) {
+						$b[$k] = $v;
+					}
+					else {
+						$b[] = $v;
+					}
+				}
+			}
+		}
+		return $b;
+	}
 
 }
 $getFIX = new arrayFixes;
