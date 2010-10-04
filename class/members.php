@@ -307,7 +307,7 @@ class tern_members {
 		}
 		$s .= '<div class="tern_wp_member_info">';
 		foreach($o['fields'] as $k => $v) {
-			if($k == 'user_email' and $o['hide_email'] and !is_user_logged_in()) {
+			if($v['name'] == 'user_email' and $o['hide_email'] and !is_user_logged_in()) {
 				continue;
 			}
 			$s .= "\n        ".str_replace('%author_url%',get_author_posts_url($u->ID),str_replace('%value%',$u->$v['name'],$v['markup']));
