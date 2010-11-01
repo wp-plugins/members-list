@@ -4,12 +4,12 @@
 //		File:
 //			conf.php
 //		Description:
-//			This file configures the Wordpress Plugin - Wordpress Calendar
+//			This file configures the Wordpress Plugin - Members List
 //		Actions:
 //			1) initialize pertinent variables
 //			2) load classes and functions
 //		Date:
-//			Added on June 12th 2010 for Wordpress Calendar v1.0b for Wordpress
+//			Added on June 12th 2010
 //		Copyright:
 //			Copyright (c) 2010 Matthew Praetzel.
 //		License:
