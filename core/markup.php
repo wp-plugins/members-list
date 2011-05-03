@@ -27,7 +27,7 @@
 //////////////////////////////////**                           **///////////////////////////////////
 //                                **                           **                                 //
 //                                *******************************                                 //
-if(!isset($_REQUEST['page']) or $_REQUEST['page'] !== 'members-list-configure-mark-up') {
+if((!isset($_REQUEST['page']) or $_REQUEST['page'] !== 'members-list-configure-mark-up') and $GLOBALS['pagenow'] != 'admin-ajax.php') {
 	return;
 }
 //                                *******************************                                 //
@@ -36,6 +36,8 @@ if(!isset($_REQUEST['page']) or $_REQUEST['page'] !== 'members-list-configure-ma
 //                                **                           **                                 //
 //                                *******************************                                 //
 add_action('init','WP_members_list_markup_actions');
+add_action('wp_ajax_markup','WP_members_list_markup_actions');
+add_action('wp_ajax_getmarkup','WP_members_list_markup_actions');
 add_action('init','WP_members_list_markup_styles');
 add_action('init','WP_members_list_markup_scripts');
 //                                *******************************                                 //
@@ -116,13 +118,14 @@ function WP_members_list_markup_actions() {
 //                                **                           **                                 //
 //                                *******************************                                 //
 function WP_members_list_markup() {
-	global $wpdb,$getWP,$ternSel,$tern_wp_members_defaults,$tern_wp_msg,$tern_wp_members_fields,$tern_wp_meta_fields,$current_user;
+	global $wpdb,$getWP,$ternSel,$tern_wp_members_defaults,$tern_wp_msg,$tern_wp_members_fields,$tern_wp_meta_fields,$current_user,$notice;
 	$o = $getWP->getOption('tern_wp_members',$tern_wp_members_defaults);
 	get_currentuserinfo();
 ?>
 	<div class="wrap">
 		<div id="icon-options-general" class="icon32"><br /></div>
 		<h2>Configure Your Members List Mark-Up</h2>
+		<?php if(!empty($notice)) { ?><div id="notice" class="error"><p><?php echo $notice ?></p></div><?php } ?>
 		<p>
 			Below you can configure what fields are shown when viewing your members list. Add fields to be displayed and edit their names, 
 			mark-up and order. When editing their mark-up, use the string %value% to place the respective value for each field and use the string 
@@ -213,18 +216,18 @@ function WP_members_list_markup() {
 									<input type="hidden" name="field_names%5B%5D" value="<?php echo $v['name'];?>" />
 									<strong><?php echo $v['name'];?></strong><br />
 									<div class="row-actions">
-										<span class='edit tern_memebrs_edit'><a href="javascript:tern_members_editField('field-<?php echo $v['name'];?>');">Edit</a> | </span>
+										<span class='edit tern_memebrs_edit'><a>Edit</a> | </span>
 										<span class='edit'><a href="admin.php?page=members-list-configure-mark-up&fields%5B%5D=<?php echo $v['name'];?>&action=remove&_wpnonce=<?php echo wp_create_nonce('tern_wp_members_nonce');?>">Remove</a></span>
 									</div>
 								</td>
 								<td class="name column-name">
 									<input type="text" name="field_titles%5B%5D" class="tern_members_fields hidden" value="<?php echo $k;?>" /><br class="tern_members_fields hidden" />
-									<input type="button" value="Update Field" onclick="tern_members_renderField('field-<?php echo $v['name'];?>');return false;" class="tern_members_fields hidden button" />
+									<input type="button" value="Update Field" class="tern_members_fields hidden button" />
 									<span class="tern_members_fields field_titles"><?php echo $k;?></span>
 								</td>
 								<td class="markup column-markup">
 									<textarea name="field_markups%5B%5D" class="tern_members_fields hidden" rows="4" cols="10"><?php echo $v['markup'];?></textarea><br class="tern_members_fields hidden" />
-									<input type="button" value="Update Field" onclick="tern_members_renderField('field-<?php echo $v['name'];?>');return false;" class="tern_members_fields hidden button" />
+									<input type="button" value="Update Field" class="tern_members_fields hidden button" />
 									<span class="tern_members_fields field_markups"><?php echo htmlentities($v['markup']); ?></span>
 								</td>
 							</tr>

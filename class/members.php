@@ -35,7 +35,7 @@ if(!class_exists('tern_members')) {
 class tern_members {
 	
 	function tern_members() {
-		global $getFIX,$getWP,$tern_wp_members_defaults;
+		global $getFIX,$getWP,$tern_wp_members_defaults,$post;
 		$this->wp = $getWP;
 		$o = $this->wp->getOption('tern_wp_members',$tern_wp_members_defaults);
 		if(!empty($o)) {
@@ -48,14 +48,17 @@ class tern_members {
 			}
 			$this->meta_fields = $a;
 		}
-		$this->url = strpos($o['url'],'?') !== false ? $o['url'] : $o['url'].'?';
+		$this->o = $o;
+		$u = get_permalink();
+		$this->url = strpos($u,'?') !== false ? $u : $u.'?';
 	}
 	function members($a,$e=true) {
 		global $tern_wp_members_defaults;
 		$this->scope();
+		$this->list = $a['list'];
 		$this->query();
 		$o = $this->wp->getOption('tern_wp_members',$tern_wp_members_defaults);
-		//
+
 		$r = '<div id="tern_members">';
 		if($a['search']) {
 			$r .= $this->search();
@@ -67,6 +70,7 @@ class tern_members {
 		if($a['sort']) {
 			$r .= $this->sortby();
 		}
+		
 		$r .= '<ul class="tern_wp_members_list">';
 		foreach($this->r as $u) {
 			//get user info
@@ -98,89 +102,145 @@ class tern_members {
 		}
 		$this->e = $this->total > (($this->s*$this->num)+$this->num) ? (($this->s*$this->num)+$this->num) : $this->total;
 	}
-	function query($g=false) {
-		global $wpdb,$tern_wp_members_defaults,$tern_wp_user_fields,$tern_wp_members_fields,$tern_wp_meta_fields;
+	function select() {
+		global $wpdb,$tern_wp_user_fields;
+		
+		$this->q = "select distinct a.ID from $wpdb->users as a ".$this->q;
+		$this->tq = "select COUNT(distinct a.ID) from $wpdb->users as a ".$this->tq;
+	}
+	function join() {
+		global $wpdb,$tern_wp_user_fields;
+		
+		//sort
+		if(!empty($this->sort) and !in_array($this->sort,$tern_wp_user_fields)) {
+			$this->q .= " ,$wpdb->usermeta as b ";
+		}
+		
+		//by
+		if(!empty($this->by) and !in_array($this->by,$tern_wp_user_fields) and !in_array($this->sort,$tern_wp_user_fields)) {
+			$this->q .= " ,$wpdb->usermeta as c ";
+		}
+		
+		//alpha
+		elseif($this->type == 'alpha' and !in_array($this->sort,$tern_wp_user_fields)) {
+			$this->q .= " ,$wpdb->usermeta as c ";
+		}
+		
+		//query
+		elseif(!empty($this->query) and !in_array($this->by,$tern_wp_user_fields)) {
+			$this->q .= " ,$wpdb->usermeta as c ";
+		}
+		
+		//list
+		if(!empty($this->list)) {
+			$this->q .= " ,$wpdb->usermeta as d ";
+		}
+		
+	}
+	function where() {
+		global $wpdb,$tern_wp_members_defaults,$tern_wp_user_fields,$tern_wp_meta_fields,$tern_wp_members_fields;
 		$o = $this->wp->getOption('tern_wp_members',$tern_wp_members_defaults);
+		
+		//start where
+		$this->q .= ' where 1=1 ';
+		
+		//sort
+		if(!empty($this->sort) and !in_array($this->sort,$tern_wp_user_fields)) {
+			$this->q .= " and b.user_id = a.ID ";
+		}
+		
+		//by
+		if(!empty($this->by) and !in_array($this->by,$tern_wp_user_fields) and !in_array($this->sort,$tern_wp_user_fields)) {
+			$this->q .= " and c.user_id = a.ID ";
+		}
+		
+		//alpha
+		elseif($this->type == 'alpha' and !in_array($this->sort,$tern_wp_user_fields)) {
+			$this->q .= " and c.user_id = a.ID ";
+		}
+		
+		//query
+		elseif(!empty($this->query) and !in_array($this->by,$tern_wp_user_fields)) {
+			$this->q .= " and c.user_id = a.ID ";
+		}
+		
+		//list
+		if(!empty($this->list)) {
+			$this->q .= " and d.user_id = a.ID ";
+		}
+		
+		//hide members
+		$this->q .= !empty($o['hidden']) ? " and a.ID NOT IN (".implode(',',$o['hidden']).")" : '';
+		
+		//sort
+		if(!empty($this->sort) and !in_array($this->sort,$tern_wp_user_fields)) {
+			$this->q .= " and b.meta_key = '$this->sort' ";
+		}
+		
+		//by
+		if(!empty($this->by) and in_array($this->by,$tern_wp_user_fields)) {
+			$this->q .= " and instr(a.$this->by,'$this->query') != 0 ";
+		}
+		elseif(!empty($this->by)) {
+			$this->q .= " and c.meta_key = '$this->by' and instr(c.meta_value,'$this->query') != 0 ";
+		}
+		elseif(!empty($this->query) and $this->type != 'alpha') {
+			foreach($this->o['searches'] as $v) {
+				if(!in_array($v,$tern_wp_user_fields)) {
+					$w .= empty($w) ? " c.meta_key = '$v'" : " or c.meta_key = '$v'";
+				}
+				else {
+					$x .= empty($x) ? "a.$v" : ",a.$v";
+				}
+			}
+			$this->q .= " and ((($w) and instr(c.meta_value,'$this->query') != 0) or instr(concat_ws(' ',$x),'$this->query')) != 0 ";
+			
+		}
+		
+		//alpha
+		if($this->type == 'alpha') {
+			$this->q .= " and c.meta_key = 'last_name' and SUBSTRING(LOWER(c.meta_value),1,1) = '$this->query' ";
+		}
+		
+		//list
+		if(!empty($this->list)) {
+			$this->q .= " and d.meta_key='_tern_wp_member_list' and d.meta_value='$this->list' ";
+		}
+		
+		$this->tq .= $this->q;
+		
+	}
+	function order() {
+		global $tern_wp_user_fields;
+		if(!empty($this->sort) and in_array($this->sort,$tern_wp_user_fields)) {
+			$this->q .= " order by $this->sort $this->order";
+		}
+		elseif(!empty($this->sort)) {
+			$this->q .= " order by b.meta_value $this->order";
+		}
+	}
+	function limit() {
+		$this->q .= " limit $this->start,$this->end ";
+	}
+	function query($g=false) {
+		global $wpdb,$tern_wp_user_fields,$tern_wp_members_fields,$tern_wp_meta_fields;
+
 		foreach($_GET as $k => $v) {
-			$$k = $this->sanitize($v);
+			$this->$k = $$k = $this->sanitize($v);
 		}
-		$sort = empty($sort) ? $o['sort'] : $sort;
-		$order = empty($order) ? $o['order'] : $order;
-		$s = strval($this->s*$this->num);
-		$e = strval($this->num);
-		//
-		$h = !empty($o['hidden']) ? " and ID NOT IN (".implode(',',$o['hidden']).")" : '';
-		//
-		if($g == 'all') {
-			$q = "select ID from $wpdb->users";
-		}
-		elseif(empty($query)) {
-			if(in_array($sort,$tern_wp_user_fields)) {
-				$q = "select distinct ID from $wpdb->users where 1 = 1 $h order by $sort $order limit $s,$e";//
-			}
-			else {
-				$q = "select distinct ID from $wpdb->users left join $wpdb->usermeta on ($wpdb->users.ID = $wpdb->usermeta.user_id and $wpdb->usermeta.meta_key = '".$sort."') where 1 = 1 $h order by $wpdb->usermeta.meta_value $order limit $s,$e";//
-			}
-			$tq = "select COUNT(distinct ID) from $wpdb->users where 1 = 1 $h";//
-		}
-		elseif(!empty($by)) {
-			if(in_array($by,$tern_wp_user_fields)) {
-				if(in_array($sort,$tern_wp_user_fields)) {
-					$q = "select distinct ID from $wpdb->users where instr($by,'$query') != 0 $h order by $sort $order limit $s,$e";//
-				}
-				else {
-					$q = "select distinct ID from $wpdb->users left join $wpdb->usermeta on ($wpdb->users.ID = $wpdb->usermeta.user_id and $wpdb->usermeta.meta_key = '$sort') where instr($wpdb->users.$by,'$query') != 0 $h order by $wpdb->usermeta.meta_value $order limit $s,$e";//
-				}
-				$tq = "select COUNT(distinct ID) from $wpdb->users where instr($by,'$query') != 0 $h";//
-			}
-			else {
-				if(in_array($sort,$tern_wp_user_fields)) {
-					$h = !empty($o['hidden']) ? " and $wpdb->users.ID NOT IN (".implode(',',$o['hidden']).")" : '';
-					$q = "select distinct $wpdb->users.ID from $wpdb->users join $wpdb->usermeta on ($wpdb->users.ID = $wpdb->usermeta.user_id) where $wpdb->usermeta.meta_key = '$by' and instr($wpdb->usermeta.meta_value,'$query') != 0 $h order by $wpdb->users.$sort $order limit $s,$e";//
-				}
-				else {
-					$h = !empty($o['hidden']) ? " and t1.user_id NOT IN (".implode(',',$o['hidden']).")" : '';
-					$q = "select distinct t1.user_id from $wpdb->usermeta as t1, $wpdb->usermeta as t2 where t1.user_id = t2.user_id and t1.meta_key = '$by' and instr(t1.meta_value,'$query') != 0 and t2.meta_key='$sort' $h order by t2.meta_value $order limit $s,$e";//
-				}
-				$h = !empty($o['hidden']) ? " and user_id NOT IN (".implode(',',$o['hidden']).")" : '';
-				$tq = "select COUNT(distinct user_id) from $wpdb->usermeta where meta_key = '$by' and instr(meta_value,'$query') != 0 $h";//
-			}
-		}
-		else {
-			if($type == 'alpha') {
-				if(in_array($sort,$tern_wp_user_fields)) {
-					$h = !empty($o['hidden']) ? " and $wpdb->users.ID NOT IN (".implode(',',$o['hidden']).")" : '';
-					$q = "select distinct $wpdb->users.ID from $wpdb->users join $wpdb->usermeta on ($wpdb->users.ID = $wpdb->usermeta.user_id) where $wpdb->usermeta.meta_key = 'last_name' and SUBSTRING(LOWER($wpdb->usermeta.meta_value),1,1) = '$query' $h order by $wpdb->users.$sort $order limit $s,$e";//
-				}
-				else {
-					$h = !empty($o['hidden']) ? " and t1.user_id NOT IN (".implode(',',$o['hidden']).")" : '';
-					$q = "select distinct t1.user_id from $wpdb->usermeta as t1, $wpdb->usermeta as t2 where t1.user_id = t2.user_id and t1.meta_key = 'last_name' and SUBSTRING(LOWER(t1.meta_value),1,1) = '$query' and t2.meta_key='".$sort."' $h order by t2.meta_value $order limit $s,$e";//
-				}
-				$h = !empty($o['hidden']) ? " and user_id NOT IN (".implode(',',$o['hidden']).")" : '';
-				$tq = "select COUNT(distinct user_id) from $wpdb->usermeta where meta_key = 'last_name' and SUBSTRING(UPPER($wpdb->usermeta.meta_value),1,1) = '$query' $h";//
-			}
-			else {
-				$c = 1;
-				$a = array_merge($this->meta_fields,$tern_wp_meta_fields);
-				foreach($a as $v) {
-					$w .= empty($w) ? " t2.meta_key = '$v'" : " or t2.meta_key = '$v'";
-				}
-				foreach($tern_wp_members_fields as $v) {
-					$x .= empty($x) ? " instr($wpdb->users.$v,'$query') != 0 " : " or instr($wpdb->users.$v,'$query') != 0 ";
-				}
-				$h = !empty($o['hidden']) ? " and $wpdb->users.ID NOT IN (".implode(',',$o['hidden']).")" : '';
-				if(in_array($sort,$tern_wp_user_fields)) {
-					
-					$q = "select distinct $wpdb->users.ID from $wpdb->users left join $wpdb->usermeta as t2 on ($wpdb->users.ID = t2.user_id) where 1=1 and( (($w) and instr(t2.meta_value,'$query') != 0) or ($x) ) $h order by $wpdb->users.$sort $order limit $s,$e";//
-				}
-				else {
-					$q = "select distinct $wpdb->users.ID from $wpdb->users left join $wpdb->usermeta as t1 on ($wpdb->users.ID = t1.user_id and t1.meta_key='$sort') left join $wpdb->usermeta as t2 on ($wpdb->users.ID = t2.user_id) where 1=1 and( (($w) and instr(t2.meta_value,'$query') != 0) or ($x) ) $h order by t1.meta_value $order limit $s,$e";
-				}
-				$tq = "select COUNT(distinct $wpdb->users.ID) from $wpdb->users left join $wpdb->usermeta as t2 on ($wpdb->users.ID = t2.user_id) where 1=1 and( (($w) and instr(t2.meta_value,'$query') != 0) or ($x) ) $h";
-			}
-		}
-		$this->r = $wpdb->get_col($q);
-		$this->total = intval($wpdb->get_var($tq));
+		$this->sort = $sort = empty($sort) ? $this->o['sort'] : $sort;
+		$this->order = $order = empty($order) ? $this->o['order'] : $order;
+		$this->start = $s = strval($this->s*$this->num);
+		$this->end = $e = strval($this->num);
+		
+		$this->join();
+		$this->where();
+		$this->order();
+		$this->limit();
+		$this->select();
+		//echo $this->q;
+		$this->r = $wpdb->get_col($this->q);
+		$this->total = intval($wpdb->get_var($this->tq));
 		return $this->r;
 	}
 	function pagination($z=false) {
@@ -222,17 +282,19 @@ class tern_members {
 		return $r;
 	}
 	function search($e=false) {
-		global $ternSel,$tern_wp_members_fields,$tern_wp_meta_fields,$tern_wp_members_defaults;
-		$p = $this->wp->getOption('tern_wp_members',$tern_wp_members_defaults);
+		global $ternSel,$tern_wp_members_fields,$tern_wp_meta_fields;
+		
 		$a = array('a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z');
-		$o = array_merge($tern_wp_meta_fields,$tern_wp_members_fields,$this->meta_fields);
+
+		$v = empty($_REQUEST['query']) ? 'search...' : $_REQUEST['query'];
+
 		$r = '<div class="tern_members_search">
 		<form method="get" action="'.$this->url.'">
-			<h2>Search Our '.ucwords($p['noun']).':</h2>
-			<input type="text" id="query" name="query" class="blur" value="search..." />
+			<h2>Search Our '.ucwords($this->o['noun']).':</h2>
+			<input type="text" id="query" name="query" class="blur" value="'.$v.'" />
 			by '.$ternSel->create(array(
 						'type'			=>	'paired',
-						'data'			=>	$o,
+						'data'			=>	$this->o['searches'],
 						'id'			=>	'by',
 						'name'			=>	'by',
 						'select_value'	=>	'All Fields',
@@ -259,22 +321,21 @@ class tern_members {
 		return $r;
 	}
 	function sortby($e=false) {
-		global $tern_wp_members_defaults;
-		$b = $this->wp->getOption('tern_wp_members',$tern_wp_members_defaults);
-		$a = array('Last Name'=>'last_name','First Name'=>'first_name','Registration Date'=>'user_registered','Email'=>'user_email');
-		foreach($a as $k => $v) {
-			unset($c);
-			$o = 'asc';
-			if($_GET['sort'] == $v and $_GET['order'] == 'asc') {
-				$o = 'desc';
+		
+		foreach((array)$this->o['sorts'] as $k => $v) {
+			unset($c,$o);
+			
+			if($this->sort == $v) {
+				if($this->order == 'asc') {
+					$c =  ' class="tern_members_sorted_u" ';
+					$o = 'desc';
+				}
+				else {
+					$c = ' class="tern_members_sorted_d" ';
+					$o = 'asc';
+				}
 			}
-			if($_GET['sort'] == $v) {
-				$c = $o == 'asc' ? ' class="tern_members_sorted_u" ' : ' class="tern_members_sorted_d" ';
-			}
-			if(empty($_GET['sort']) and $b['sort'] == $v) {
-				$o = $b['order'] == 'asc' ? 'desc' : 'asc';
-				$c = $o == 'asc' ? ' class="tern_members_sorted_u" ' : ' class="tern_members_sorted_d" ';
-			}
+			
 			$r .= '<li'.$c.'><a href="'.$this->url.'&query='.urldecode($_GET['query']).'&by='.$_GET['by'].'&type='.$_GET['type'].'&sort='.$v.'&order='.$o.'">'.$k.'</a></li>';
 		}
 		$r = '<div class="tern_members_sort"><label>Sort by:</label><ul>'.$r.'</ul></div>';
@@ -310,7 +371,9 @@ class tern_members {
 			if($v['name'] == 'user_email' and $o['hide_email'] and !is_user_logged_in()) {
 				continue;
 			}
-			$s .= "\n        ".str_replace('%author_url%',get_author_posts_url($u->ID),str_replace('%value%',$u->$v['name'],$v['markup']));
+			if(!empty($u->$v['name'])) {
+				$s .= "\n        ".str_replace('%author_url%',get_author_posts_url($u->ID),str_replace('%value%',$u->$v['name'],$v['markup']));
+			}
 		}
 		return $s."\n    ".'</div>'."\n".'</li>';
 	}

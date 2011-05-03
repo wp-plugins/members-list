@@ -3,8 +3,8 @@ Contributors: mpraetzel
 Donate link: http://www.ternstyle.us/donate
 Tags: members, members list, users, users list
 Requires at least: 2.7
-Tested up to: 3.0
-Stable tag: 3.2.2
+Tested up to: 3.1.2
+Stable tag: 3.5
 
 The Members Plugin allows you to create a post on your wordpress blog that lists all your wordpress members.
 
@@ -18,34 +18,25 @@ NOTE: A FRESH INSTALLATION OF THE PLUGIN IS REQUIRED TO USE VERSION 3.2!!!!!
 * Documentation: `http://www.ternstyle.us/products/plugins/wordpress/wordpress-members-list-plugin/wordpress-members-list-plugin-documentation`
 * Working example: `http://www.ternstyle.us/products/plugins/wordpress/wordpress-members-list-plugin/members-list-plugin-demo`
 * Change Log: `http://www.ternstyle.us/products/plugins/wordpress/wordpress-members-list-plugin/wordpress-members-list-plugin-change-log`
+* Facebook: `http://www.facebook.com/ternstyle`
 
 == Installation ==
 
 * Upload the `members-list` folder to the `/wp-content/plugins/` directory
 * Activate the plugin through the 'Plugins' menu in WordPress
 * Navigate to your Wordpress blog's theme folder which should be found in /wp-content/themes/the-name-of-your-theme
-* You'll need to create a new template file entitled "members.php"
-** To do this copy your file entitled single.php and name it members.php.
-** Place this code `<?php
-/*
-Template Name: Members
-*/
-?>` on the first line of the file.
-** Remove the code that prints the single post to the page and replace it with this code: `<?php $members = new tern_members;$members->members(array('search'=>true,'pagination'=>true,'sort'=>true));?>`
-** Upload the new file to the server.
-* Now you'll need to create a new page which you can title whatever you like.
-* Assign this page to the template entitled "Members"
-* Remember to alter your Members List settings to reflect the new name of this page.
-* That should be it. View the page and you should see the Members List in its moderately useful glory!
+* Add the shortcode to the page or post you'd like to display the members list.
+* You're all set!
 
 == Features ==
 
 * List your members in a wordpress page
 * Hide selected members from members list
-* Search through your members using user standard and meta fields
+* Search through your members using user standard and meta fields of your choice
 * Search alphabetically by last name
 * Pagination to page through members list and search results
-* Sort by last name, first name, registration date or email
+* Sort by last name, first name, registration date or email or any other field of your choice
+* Create custom lists of users with all the same paging, searching and sorting funcitonality
 
 == Resources ==
 
@@ -53,6 +44,7 @@ Template Name: Members
 * Documentation: `http://www.ternstyle.us/products/plugins/wordpress/wordpress-members-list-plugin/wordpress-members-list-plugin-documentation`
 * Working example: `http://www.ternstyle.us/products/plugins/wordpress/wordpress-members-list-plugin/members-list-plugin-demo`
 * Change Log: `http://www.ternstyle.us/products/plugins/wordpress/wordpress-members-list-plugin/wordpress-members-list-plugin-change-log`
+* Facebook: `http://www.facebook.com/ternstyle`
 
 == Frequently Asked Questions ==
 

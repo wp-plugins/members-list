@@ -86,7 +86,7 @@ function WP_members_list_list_actions() {
 //                                **                           **                                 //
 //                                *******************************                                 //
 function WP_members_list_list() {
-global $wp_roles,$getWP,$tern_wp_msg,$tern_wp_members_defaults,$current_user;
+global $wp_roles,$getWP,$tern_wp_msg,$tern_wp_members_defaults,$current_user,$notice;
 	get_currentuserinfo();
 	$o = $getWP->getOption('tern_wp_members',$tern_wp_members_defaults);
 	$wps = new WP_User_Search($_GET['query'],$_GET['userspage'],$_GET['role']);
@@ -110,6 +110,7 @@ global $wp_roles,$getWP,$tern_wp_msg,$tern_wp_members_defaults,$current_user;
 	<div class="wrap">
 		<div id="icon-users" class="icon32"><br /></div>
 		<h2>Members List</h2>
+		<?php if(!empty($notice)) { ?><div id="notice" class="error"><p><?php echo $notice ?></p></div><?php } ?>
 		<p>Here you are able to select which of your members you'd like to show or hide in your members list. By default all members are showm.</p>
 		<?php
 			if(!empty($tern_wp_msg)) {

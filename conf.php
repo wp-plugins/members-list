@@ -30,14 +30,16 @@
 $tern_wp_members_defaults = array(
 	'limit'		=>	10,
 	'sort'		=>	'last_name',
+	'sorts'		=>	array('Last Name'=>'last_name','First Name'=>'first_name','Registration Date'=>'user_registered','Email'=>'user_email'),
 	'order'		=>	'asc',
 	'meta'		=>	'',
-	'url'		=>	get_bloginfo('home').'/members',
+	'url'		=>	false,
 	'gravatars'	=>	1,
 	'hide_email'	=>	0,
 	'hide'		=>	0,
 	'hidden'	=>	array(0),
 	'noun'		=>	'members',
+	'searches'	=>	array('Last Name'=>'last_name','First Name'=>'first_name','Description'=>'description','User Name'=>'user_nicename','Email'=>'user_email','Display Name'=>'display_name','URL'=>'user_url'),
 	'fields'	=>	array(
 		'User Name'		=>	array(
 			'name'		=>	'user_nicename',
@@ -51,7 +53,8 @@ $tern_wp_members_defaults = array(
 			'name'		=>	'user_url',
 			'markup'	=>	'<div class="tern_wp_members_user_url"><a href="%value%">%value%</a></div>'
 		)
-	)
+	),
+	'lists'		=>	array()
 );
 $tern_wp_meta_fields = array(
 	'Last Name'		=>	'last_name',
@@ -62,7 +65,8 @@ $tern_wp_members_fields = array(
 	'User Name'		=>	'user_nicename',
 	'Email Address'	=>	'user_email',
 	'Display Name'	=>	'display_name',
-	'URL'			=>	'user_url'
+	'URL'			=>	'user_url',
+	'Registration Date'	=>	'user_registered'
 );
 $tern_wp_user_fields = array('ID','user_login','user_pass','user_nicename','user_email','user_url','user_registered','user_activation_key','user_status','display_name');
 //                                *******************************                                 //

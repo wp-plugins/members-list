@@ -73,12 +73,13 @@ function WP_members_list_settings_actions() {
 //                                **                           **                                 //
 //                                *******************************                                 //
 function WP_members_list_settings() {
-	global $getWP,$ternSel,$tern_wp_msg,$tern_wp_members_defaults,$tern_wp_members_fields,$tern_wp_meta_fields,$wpdb;
+	global $getWP,$ternSel,$tern_wp_msg,$tern_wp_members_defaults,$tern_wp_members_fields,$tern_wp_meta_fields,$wpdb,$notice;
 	$o = $getWP->getOption('tern_wp_members',$tern_wp_members_defaults);
 ?>
 <div class="wrap">
 	<div id="icon-options-general" class="icon32"><br /></div>
 	<h2>Members Settings</h2>
+	<?php if(!empty($notice)) { ?><div id="notice" class="error"><p><?php echo $notice ?></p></div><?php } ?>
 	<?php
 		if(!empty($tern_wp_msg)) {
 			echo '<div id="message" class="updated fade"><p>'.$tern_wp_msg.'</p></div>';
@@ -87,31 +88,10 @@ function WP_members_list_settings() {
 	<form method="post" action="">
 		<table class="form-table">
 			<tr valign="top">
-				<th scope="row"><label for="url">URL for your members page</label></th>
-				<td>
-					<input type="text" name="url" class="regular-text" value="<?php echo $o['url']; ?>" />
-					<span class="setting-description">http://blog.ternstyle.us/members</span>
-				</td>
-			</tr>
-			<tr valign="top">
 				<th scope="row"><label for="noun">Use a word other than "Members" on the front-end</label></th>
 				<td>
 					<input type="text" name="noun" class="regular-text" value="<?php echo $o['noun']; ?>" />
 					<span class="setting-description">i.e. "Clients" or "Users"</span>
-				</td>
-			</tr>
-			<tr valign="top">
-				<th scope="row"><label for="hide_email">Hide email addresses from anyone who is not logged in:</label></th>
-				<td>
-					<input type="radio" name="hide_email" value="1" <?php if($o['hide_email']) { echo 'checked'; } ?> /> yes
-					<input type="radio" name="hide_email" value="0" <?php if(!$o['hide_email']) { echo 'checked'; } ?> /> no
-				</td>
-			</tr>
-			<tr valign="top">
-				<th scope="row"><label for="hide">Automatically hide new members</label></th>
-				<td>
-					<input type="radio" name="hide" value="1" <?php if($o['hide']) { echo 'checked'; } ?> /> yes
-					<input type="radio" name="hide" value="0" <?php if(!$o['hide']) { echo 'checked'; } ?> /> no
 				</td>
 			</tr>
 			<tr valign="top">
@@ -129,6 +109,26 @@ function WP_members_list_settings() {
 					?>
 				</td>
 			</tr>
+		</table>
+		<h3>Hiding Members</h3>
+		<table class="form-table">
+			<tr valign="top">
+				<th scope="row"><label for="hide_email">Hide email addresses from anyone who is not logged in:</label></th>
+				<td>
+					<input type="radio" name="hide_email" value="1" <?php if($o['hide_email']) { echo 'checked'; } ?> /> yes
+					<input type="radio" name="hide_email" value="0" <?php if(!$o['hide_email']) { echo 'checked'; } ?> /> no
+				</td>
+			</tr>
+			<tr valign="top">
+				<th scope="row"><label for="hide">Automatically hide new members</label></th>
+				<td>
+					<input type="radio" name="hide" value="1" <?php if($o['hide']) { echo 'checked'; } ?> /> yes
+					<input type="radio" name="hide" value="0" <?php if(!$o['hide']) { echo 'checked'; } ?> /> no
+				</td>
+			</tr>
+		</table>
+		<h3>Sorting Members</h3>
+		<table class="form-table">
 			<tr valign="top">
 				<th scope="row"><label for="sort">Sort the members list originally by</label></th>
 				<td>
@@ -166,6 +166,10 @@ function WP_members_list_settings() {
 					<input type="radio" name="order" value="desc" <?php if($o['order'] == 'desc') { echo 'checked'; } ?> /> Descending
 				</td>
 			</tr>
+		</table>
+		<h3>Display Options</h3>
+		<table class="form-table">
+		<!--
 			<tr valign="top">
 				<th scope="row"><label for="meta">Meta fields to search by</label></th>
 				<td>
@@ -173,6 +177,7 @@ function WP_members_list_settings() {
 					<span class="setting-description">e.g. occupation,employer,department,city,state,zip,country</span>
 				</td>
 			</tr>
+		-->
 			<tr valign="top">
 				<th scope="row"><label for="gravatars">Use gravatars?</label></th>
 				<td>
