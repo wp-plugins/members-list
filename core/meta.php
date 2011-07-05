@@ -57,6 +57,11 @@ function WP_members_list_meta_scripts() {
 //                                **                           **                                 //
 //                                *******************************                                 //
 function WP_members_list_meta_actions($i) {
+
+	if(!current_user_can('edit_users')) {
+		return;
+	}
+
 	global $getWP,$tern_wp_members_defaults,$current_user,$wpdb,$profileuser;
 	$o = $getWP->getOption('tern_wp_members',$tern_wp_members_defaults);
 	
