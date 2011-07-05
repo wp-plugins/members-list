@@ -193,8 +193,8 @@ class tern_members {
 					$x .= empty($x) ? "a.$v" : ",a.$v";
 				}
 			}
-			$this->q .= " and ((($w) and instr(c.meta_value,'$this->query') != 0) or instr(concat_ws(' ',$x),'$this->query')) != 0 ";
-			
+			$this->q .= " and (($w) and instr(c.meta_value,'$this->query') != 0) ";
+			$this->q .= empty($x) ? '' : " or instr(concat_ws(' ',$x),'$this->query')) != 0 ";
 		}
 		
 		//alpha
@@ -238,7 +238,6 @@ class tern_members {
 		$this->order();
 		$this->limit();
 		$this->select();
-		//echo $this->q;
 		$this->r = $wpdb->get_col($this->q);
 		$this->total = intval($wpdb->get_var($this->tq));
 		return $this->r;
