@@ -194,8 +194,8 @@ class tern_members {
 					$x .= empty($x) ? "a.$v" : ",a.$v";
 				}
 			}
-			$this->q .= " and (($w) and instr(c.meta_value,'$this->query') != 0) ";
-			$this->q .= empty($x) ? '' : " or instr(concat_ws(' ',$x),'$this->query')) != 0 ";
+			$this->q .= " and ((($w) and instr(c.meta_value,'$this->query') != 0) ";
+			$this->q .= empty($x) ? '' : " or instr(concat_ws(' ',$x),'$this->query') != 0) ";
 		}
 		
 		//alpha

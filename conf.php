@@ -54,7 +54,8 @@ $tern_wp_members_defaults = array(
 			'markup'	=>	'<div class="tern_wp_members_user_url"><a href="%value%">%value%</a></div>'
 		)
 	),
-	'lists'		=>	array()
+	'lists'		=>	array(),
+	'allow_display'	=>	0
 );
 $tern_wp_meta_fields = array(
 	'Last Name'		=>	'last_name',
