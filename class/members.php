@@ -60,14 +60,15 @@ class tern_members {
 		$o = $this->wp->getOption('tern_wp_members',$tern_wp_members_defaults);
 
 		$r = '<div id="tern_members">';
-		if($a['search']) {
+
+		if($a['search'] !== false and $a['search'] !== 'false') {
 			$r .= $this->search();
 		}
-		if($a['alpha']) {
+		if($a['alpha'] !== false and $a['alpha'] !== 'false') {
 			$r .= $this->alpha();
 		}
 		$r .= $this->viewing($a);
-		if($a['sort']) {
+		if($a['sort'] !== false and $a['sort'] !== 'false') {
 			$r .= $this->sortby();
 		}
 		
@@ -83,7 +84,7 @@ class tern_members {
 			}
 		}
 		$r .= '</ul>';
-		if($a['pagination2']) {
+		if($a['pagination2'] !== false and $a['pagination2'] !== 'false') {
 			$r .= $this->pagination();
 		}
 		$r .= '</div>';
@@ -193,8 +194,8 @@ class tern_members {
 					$x .= empty($x) ? "a.$v" : ",a.$v";
 				}
 			}
-			$this->q .= " and ((($w) and instr(c.meta_value,'$this->query') != 0) or instr(concat_ws(' ',$x),'$this->query')) != 0 ";
-			
+			$this->q .= " and ((($w) and instr(c.meta_value,'$this->query') != 0) ";
+			$this->q .= empty($x) ? '' : " or instr(concat_ws(' ',$x),'$this->query') != 0) ";
 		}
 		
 		//alpha
@@ -238,7 +239,6 @@ class tern_members {
 		$this->order();
 		$this->limit();
 		$this->select();
-		//echo $this->q;
 		$this->r = $wpdb->get_col($this->q);
 		$this->total = intval($wpdb->get_var($this->tq));
 		return $this->r;
@@ -352,7 +352,7 @@ class tern_members {
 			$m = ' whose last names begin with the letter "'.strtoupper($q).'".';
 		}
 		$r = '<div class="tern_members_view">Now viewing <b>' . $v . '</b> through <b>' . $this->e . '</b> of <b>'.$this->total.'</b> '.$o['noun'].' found'.$m;
-		if($a['pagination']) {
+		if($a['pagination'] !== false and $a['pagination'] !== 'false') {
 			$r .= $this->pagination();
 		}
 		$r .= '</div>';
