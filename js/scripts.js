@@ -23,10 +23,9 @@
 (function($) {
 		  
 	$(document).ready(function () {
-		$('#query').bind('focus',function (){
+		$('#query,#byradius').bind('focus',function (){
 			if(this.value=='search...') { this.value='';$('#query').toggleClass('focus'); }
-		});
-		$('#query').bind('blur',function (){
+		}).bind('blur',function (){
 			if(this.value=='') { this.value='search...';$('#query').toggleClass('focus'); }
 		});
 	});

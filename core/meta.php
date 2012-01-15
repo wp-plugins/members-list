@@ -30,6 +30,10 @@
 if($pagenow !== 'profile.php' and $pagenow !== 'user-edit.php') {
 	return;
 }
+
+$states = array('Alabama'=>'AL','Alaska'=>'AK','Arizona'=>'AZ','Arkansas'=>'AR','California'=>'CA','Colorado'=>'CO','Connecticut'=>'CT','Delaware'=>'DE','Florida'=>'FL','Georgia'=>'GA','Hawaii'=>'HI','Idaho'=>'ID','Illinois'=>'IL','Indiana'=>'IN','Iowa'=>'IA','Kansas'=>'KS','Kentucky'=>'KY','Louisiana'=>'LA','Maine'=>'ME','Maryland'=>'MD','Massachusetts'=>'MA','Michigan'=>'MI','Minnesota'=>'MN','Mississippi'=>'MS','Missouri'=>'MO','Montana'=>'MT','Nebraska'=>'NE','Nevada'=>'NV','New Hampshire'=>'NH','New Jersey'=>'NJ','New Mexico'=>'NM','New York'=>'NY','North Carolina'=>'NC','North Dakota'=>'ND','Ohio'=>'OH','Oklahoma'=>'OK','Oregon'=>'OR','Pennsylvania'=>'PA','Rhode Island'=>'RI','South Carolina'=>'SC','South Dakota'=>'SD','Tennessee'=>'TN','Texas'=>'TX','Utah'=>'UT','Vermont'=>'VT','Virginia'=>'VA','Washington'=>'WA','West Virginia'=>'WV','Wisconsin'=>'WI','Wyoming'=>'WY','Alberta '=>'AB','British Columbia '=>'BC','Manitoba '=>'MB','New Brunswick '=>'NB','Newfoundland and Labrador '=>'NL','Northwest Territories '=>'NT','Nova Scotia '=>'NS','Nunavut '=>'NU','Ontario '=>'ON','Prince Edward Island '=>'PE','Quebec '=>'QC','Saskatchewan '=>'SK','Yukon '=>'YT');
+
+$addy = array('line1','line2','city','state','zip');
 //                                *******************************                                 //
 //________________________________** ADD EVENTS                **_________________________________//
 //////////////////////////////////**                           **///////////////////////////////////
@@ -57,7 +61,7 @@ function WP_members_list_meta_scripts() {
 //                                **                           **                                 //
 //                                *******************************                                 //
 function WP_members_list_meta_actions($i) {
-	global $getWP,$tern_wp_members_defaults,$current_user,$wpdb,$profileuser,$current_user;
+	global $getWP,$tern_wp_members_defaults,$current_user,$wpdb,$profileuser,$current_user,$getMap;
 	$o = $getWP->getOption('tern_wp_members',$tern_wp_members_defaults);
 	get_currentuserinfo();
 
@@ -73,6 +77,21 @@ function WP_members_list_meta_actions($i) {
 		add_user_meta($i,'_tern_wp_member_list',$v);
 	}
 	
+	$a = array('line1','line2','city','state','zip');
+	foreach($a as $v) {
+		delete_user_meta($i,'_'.$v);
+		add_user_meta($i,'_'.$v,$_POST[$v]);
+		$address[$v] = $_POST[$v];
+	}
+	//delete_user_meta($i,'_address');
+	//add_user_meta($i,'_address',$address);
+	
+	
+	$l = $getMap->geoLocate($address);
+	delete_user_meta($i,'_lat');
+	delete_user_meta($i,'_lng');
+	add_user_meta($i,'_lat',$l['lat']);
+	add_user_meta($i,'_lng',$l['lng']);
 }
 //                                *******************************                                 //
 //________________________________** SETTINGS                  **_________________________________//
@@ -80,8 +99,8 @@ function WP_members_list_meta_actions($i) {
 //                                **                           **                                 //
 //                                *******************************                                 //
 function WP_members_list_meta($i) {
-	
-	global $getWP,$tern_wp_members_defaults,$profileuser,$current_user;
+
+	global $getWP,$tern_wp_members_defaults,$profileuser,$current_user,$ternSel,$states,$addy;
 	$o = $getWP->getOption('tern_wp_members',$tern_wp_members_defaults);
 	get_currentuserinfo();
 
@@ -99,6 +118,63 @@ function WP_members_list_meta($i) {
 			<li><input type="checkbox" name="lists[]" value="<?php echo $v; ?>" <?php if(WP_members_list_is_in_list($i->ID,$v)) {?>checked<?php } ?> /> <?php echo $v; ?></li>
 			<?php } ?>
 			</ul>
+		</td>
+	</tr>
+	</table>
+	<h3>Address</h3>
+	<?php
+		foreach($addy as $v) {
+			$address[$v] = get_user_meta($i->ID,'_'.$v,true);
+		}
+		//$address = get_user_meta($i->ID,'_address',true);
+	?>
+	<table class="form-table">
+	<tr>
+		<th><label for="line1">Address Line 1:</label></th>
+		<td>
+			<input type="text" name="line1" value="<?php echo $address['line1']; ?>" class="regular-text" />
+		</td>
+	</tr>
+	<tr>
+		<th><label for="line2">Address Line 2:</label></th>
+		<td>
+			<input type="text" name="line2" value="<?php echo $address['line2']; ?>" class="regular-text" />
+		</td>
+	</tr>
+	<tr>
+		<th><label for="city">City:</label></th>
+		<td>
+			<input type="text" name="city" value="<?php echo $address['city']; ?>" class="regular-text" />
+		</td>
+	</tr>
+	<tr>
+		<th><label for="state">State:</label></th>
+		<td>
+			<?php echo $ternSel->create(array(
+				'type'			=>	'paired',
+				'data'			=>	$states,
+				'name'			=>	'state',
+				'select_value'	=>	'select',
+				'selected'		=>	array($address['state'])
+			)); ?>
+		</td>
+	</tr>
+	<tr>
+		<th><label for="zip">Zipcode:</label></th>
+		<td>
+			<input type="text" name="zip" value="<?php echo $address['zip']; ?>" class="regular-text" />
+		</td>
+	</tr>
+	<tr>
+		<th><label for="lat">Latitude:</label></th>
+		<td>
+			<input type="text" name="lat" value="<?php echo get_user_meta($i->ID,'_lat',true); ?>" class="regular-text" />
+		</td>
+	</tr>
+	<tr>
+		<th><label for="lng">Longitude:</label></th>
+		<td>
+			<input type="text" name="lng" value="<?php echo get_user_meta($i->ID,'_lng',true); ?>" class="regular-text" />
 		</td>
 	</tr>
 	</table>
