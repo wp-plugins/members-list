@@ -340,7 +340,7 @@ class tern_members {
 					)).'<input type="hidden" name="p" value="'.$_REQUEST['p'].'" />
 			<input type="hidden" name="page_id" value="'.$_REQUEST['page_id'].'" />
 			<input type="submit" value="Submit" />
-		</div></form>';
+		</form></div>';
 		if($e) { echo $r; }
 		return $r;
 	}
