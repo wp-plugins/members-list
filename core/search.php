@@ -160,7 +160,6 @@ function WP_members_list_search_fields() {
 					<th scope="col" class="manage-column">Name</th>
 					<th scope="col" class="manage-column">Field</th>
 				</tr>
-				</tr>
 				</tfoot>
 				<tbody id="fields" class="list:sort sort-list">
 					<?php foreach($o['searches'] as $k => $v) { $d = empty($d) ? ' class="alternate"' : ''; ?>

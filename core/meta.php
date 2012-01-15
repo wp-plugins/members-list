@@ -57,6 +57,14 @@ function WP_members_list_meta_scripts() {
 //                                **                           **                                 //
 //                                *******************************                                 //
 function WP_members_list_meta_actions($i) {
+	global $getWP,$tern_wp_members_defaults,$current_user,$wpdb,$profileuser,$current_user;
+	$o = $getWP->getOption('tern_wp_members',$tern_wp_members_defaults);
+	get_currentuserinfo();
+
+	if(!current_user_can('edit_users') and (($o['allow_display'] and $current_user->ID != $i) or !$o['allow_display'])) {
+		return;
+	}
+
 	global $getWP,$tern_wp_members_defaults,$current_user,$wpdb,$profileuser;
 	$o = $getWP->getOption('tern_wp_members',$tern_wp_members_defaults);
 	
@@ -73,11 +81,11 @@ function WP_members_list_meta_actions($i) {
 //                                *******************************                                 //
 function WP_members_list_meta($i) {
 	
-	global $getWP,$tern_wp_members_defaults,$profileuser;
+	global $getWP,$tern_wp_members_defaults,$profileuser,$current_user;
 	$o = $getWP->getOption('tern_wp_members',$tern_wp_members_defaults);
-	
-	
-	if(!current_user_can('edit_users')) {
+	get_currentuserinfo();
+
+	if(!current_user_can('edit_users') and (($o['allow_display'] and $current_user->ID != $i->ID) or !$o['allow_display'])) {
 		return;
 	}
 ?>
