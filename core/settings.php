@@ -179,6 +179,13 @@ function WP_members_list_settings() {
 			</tr>
 		-->
 			<tr valign="top">
+				<th scope="row"><label for="allow_display">Allow users to choose which lists they wish to be a part of?</label></th>
+				<td>
+					<input type="radio" name="allow_display" value="1" <?php if($o['allow_display']) { echo 'checked'; } ?> /> yes
+					<input type="radio" name="allow_display" value="0" <?php if(!$o['allow_display']) { echo 'checked'; } ?> /> no
+				</td>
+			</tr>
+			<tr valign="top">
 				<th scope="row"><label for="gravatars">Use gravatars?</label></th>
 				<td>
 					<input type="radio" name="gravatars" value="1" <?php if($o['gravatars']) { echo 'checked'; } ?> /> yes
