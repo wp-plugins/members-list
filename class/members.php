@@ -262,8 +262,8 @@ class tern_members {
 		foreach($_GET as $k => $v) {
 			$this->$k = $$k = $this->sanitize($v);
 		}
-		$this->sort = $sort = empty($sort) ? $this->o['sort'] : $sort;
-		$this->order = $order = empty($order) ? $this->o['order'] : $order;
+		$this->sort = $sort = $_GET['sort'] ? $_GET['sort'] : $this->o['sort'];
+		$this->order = $order = $_GET['order'] ? $_GET['order'] : $this->o['order'];
 		$this->start = $s = strval($this->s*$this->num);
 		$this->end = $e = strval($this->num);
 		
@@ -317,7 +317,7 @@ class tern_members {
 		return $r;
 	}
 	function get_query($p) {
-		return $this->url.'&page='.$p.'&query='.$q.'&by='.$b.'&type='.$t.'&sort='.$sort.'&order='.$order.'&byradius='.$_GET['byradius'].'&radius='.$_GET['radius'];
+		return $this->url.'page='.$p.'&query='.$_GET['query'].'&by='.$_GET['by'].'&type='.$_GET['type'].'&sort='.$this->sort.'&order='.$this->order.'&byradius='.$_GET['byradius'].'&radius='.$_GET['radius'];
 	}
 	function search($e=false) {
 		global $ternSel,$tern_wp_members_fields,$tern_wp_meta_fields;
