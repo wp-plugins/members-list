@@ -60,14 +60,18 @@ class tern_members {
 		$o = $this->wp->getOption('tern_wp_members',$tern_wp_members_defaults);
 
 		$r = '<div id="tern_members">';
-		if($a['search']) {
+
+		if($a['search'] !== false and $a['search'] !== 'false') {
 			$r .= $this->search();
 		}
-		if($a['alpha']) {
+		if($a['radius'] !== false and $a['radius'] !== 'false') {
+			$r .= $this->radius();
+		}
+		if($a['alpha'] !== false and $a['alpha'] !== 'false') {
 			$r .= $this->alpha();
 		}
 		$r .= $this->viewing($a);
-		if($a['sort']) {
+		if($a['sort'] !== false and $a['sort'] !== 'false') {
 			$r .= $this->sortby();
 		}
 		
@@ -83,7 +87,7 @@ class tern_members {
 			}
 		}
 		$r .= '</ul>';
-		if($a['pagination2']) {
+		if($a['pagination2'] !== false and $a['pagination2'] !== 'false') {
 			$r .= $this->pagination();
 		}
 		$r .= '</div>';
@@ -102,10 +106,20 @@ class tern_members {
 		}
 		$this->e = $this->total > (($this->s*$this->num)+$this->num) ? (($this->s*$this->num)+$this->num) : $this->total;
 	}
+	function geo_code() {
+		global $getMap;
+		if(!empty($_GET['byradius']) and !empty($_GET['radius'])) {
+			$r = $getMap->geoLocate(array('zip'=>$_GET['byradius']));
+			$lat = $this->lat = $r['lat'];
+			$lng = $this->lng = $r['lng'];
+		}
+	}
 	function select() {
-		global $wpdb,$tern_wp_user_fields;
+		global $wpdb,$tern_wp_user_fields,$getMap;
 		
-		$this->q = "select distinct a.ID from $wpdb->users as a ".$this->q;
+		$q = "select distinct a.ID";
+		$q .= " from $wpdb->users as a ".$this->q;
+		$this->q = $q;
 		$this->tq = "select COUNT(distinct a.ID) from $wpdb->users as a ".$this->tq;
 	}
 	function join() {
@@ -117,7 +131,7 @@ class tern_members {
 		}
 		
 		//by
-		if(!empty($this->by) and !in_array($this->by,$tern_wp_user_fields) and !in_array($this->sort,$tern_wp_user_fields)) {
+		if(!empty($this->by) and !in_array($this->by,$tern_wp_user_fields) and !in_array($this->sort,$tern_wp_user_fields) and $this->type != 'radius') {
 			$this->q .= " ,$wpdb->usermeta as c ";
 		}
 		
@@ -134,6 +148,12 @@ class tern_members {
 		//list
 		if(!empty($this->list)) {
 			$this->q .= " ,$wpdb->usermeta as d ";
+		}
+		
+		//radius
+		if(!empty($_GET['byradius']) and !empty($_GET['radius'])) {
+			$this->q .= " ,$wpdb->usermeta as g ";
+			$this->q .= " ,$wpdb->usermeta as h ";
 		}
 		
 	}
@@ -160,13 +180,20 @@ class tern_members {
 		}
 		
 		//query
-		elseif(!empty($this->query) and !in_array($this->by,$tern_wp_user_fields)) {
+		elseif(!empty($this->query) and $this->query != 'search...' and !in_array($this->by,$tern_wp_user_fields)) {
 			$this->q .= " and c.user_id = a.ID ";
 		}
 		
 		//list
 		if(!empty($this->list)) {
 			$this->q .= " and d.user_id = a.ID ";
+		}
+		
+		//radius
+		if(!empty($_GET['byradius']) and !empty($_GET['radius'])) {
+			$this->q .= " and g.user_id = a.ID ";
+			$this->q .= " and h.user_id = a.ID ";
+			$this->q .= " and g.meta_key='_lat' and h.meta_key='_lng' ";
 		}
 		
 		//hide members
@@ -184,7 +211,7 @@ class tern_members {
 		elseif(!empty($this->by)) {
 			$this->q .= " and c.meta_key = '$this->by' and instr(c.meta_value,'$this->query') != 0 ";
 		}
-		elseif(!empty($this->query) and $this->type != 'alpha') {
+		elseif(!empty($this->query) and $this->query != 'search...' and $this->type != 'alpha') {
 			foreach($this->o['searches'] as $v) {
 				if(!in_array($v,$tern_wp_user_fields)) {
 					$w .= empty($w) ? " c.meta_key = '$v'" : " or c.meta_key = '$v'";
@@ -193,8 +220,9 @@ class tern_members {
 					$x .= empty($x) ? "a.$v" : ",a.$v";
 				}
 			}
-			$this->q .= " and ((($w) and instr(c.meta_value,'$this->query') != 0) or instr(concat_ws(' ',$x),'$this->query')) != 0 ";
-			
+			$this->q .= empty($x) ? ' and ' : 'and (';
+			$this->q .= "(($w) and instr(c.meta_value,'$this->query') != 0) ";
+			$this->q .= empty($x) ? '' : " or instr(concat_ws(' ',$x),'$this->query') != 0) ";
 		}
 		
 		//alpha
@@ -206,12 +234,18 @@ class tern_members {
 		if(!empty($this->list)) {
 			$this->q .= " and d.meta_key='_tern_wp_member_list' and d.meta_value='$this->list' ";
 		}
-		
+				
 		$this->tq .= $this->q;
 		
 	}
 	function order() {
 		global $tern_wp_user_fields;
+		if(!empty($_GET['byradius']) and !empty($_GET['radius'])) {
+			$d = 1.609344*$_GET['radius'];
+			$r = " and 6371 * 2 * ASIN( SQRT( POWER( SIN( RADIANS( $this->lat - g.meta_value ) / 2 ), 2 ) + COS( RADIANS( $this->lat ) ) * COS( RADIANS( g.meta_value ) ) * POWER( SIN( RADIANS( $this->lng - h.meta_value ) / 2 ), 2 ) ) ) < $d";
+			$this->q .= $r;
+			$this->tq .= $r;
+		}
 		if(!empty($this->sort) and in_array($this->sort,$tern_wp_user_fields)) {
 			$this->q .= " order by $this->sort $this->order";
 		}
@@ -228,17 +262,18 @@ class tern_members {
 		foreach($_GET as $k => $v) {
 			$this->$k = $$k = $this->sanitize($v);
 		}
-		$this->sort = $sort = empty($sort) ? $this->o['sort'] : $sort;
-		$this->order = $order = empty($order) ? $this->o['order'] : $order;
+		$this->sort = $sort = $_GET['sort'] ? $_GET['sort'] : $this->o['sort'];
+		$this->order = $order = $_GET['order'] ? $_GET['order'] : $this->o['order'];
 		$this->start = $s = strval($this->s*$this->num);
 		$this->end = $e = strval($this->num);
 		
+		$this->geo_code();
 		$this->join();
 		$this->where();
 		$this->order();
 		$this->limit();
 		$this->select();
-		//echo $this->q;
+		
 		$this->r = $wpdb->get_col($this->q);
 		$this->total = intval($wpdb->get_var($this->tq));
 		return $this->r;
@@ -264,22 +299,25 @@ class tern_members {
 			$sort = empty($_GET['sort']) ? $o['sort'] : $_GET['sort'];
 			$order = empty($_GET['order']) ? $o['order'] : $_GET['order'];
 			for($i=$s;$i<=$e;$i++) {
-				$h = $this->url.'&page='.($i).'&query='.$q.'&by='.$b.'&type='.$t.'&sort='.$sort.'&order='.$order;
+				$h = $this->get_query($i);
 				$c = intval($this->s+1) == $i ? ' class="tern_members_pagination_current tern_pagination_current"' : '';
 				$r .= '<li'.$c.'><a href="' . $h . '">' . $i . '</a></li>';
 			}
 			if($this->s > 0) {
-				$r = '<li><a href="'.$this->url.'&page='.intval($this->s).'&query='.$q.'&by='.$b.'&type='.$t.'&sort='.$sort.'&order='.$order.'">Previous</a></li>'.$r;
+				$r = '<li><a href="'.$this->get_query(intval($this->s)).'">Previous</a></li>'.$r;
 			}
 			if($this->total > (($this->s*$this->num)+$this->num)) {
-				$r .= '<li><a href="'.$this->url.'&page='.intval($this->s+2).'&query='.$q.'&by='.$b.'&type='.$t.'&sort='.$sort.'&order='.$order.'">Next</a></li>';
-				$r .= '<li><a href="'.$this->url.'&page='.$this->n.'&query='.$q.'&by='.$b.'&type='.$t.'&sort='.$sort.'&order='.$order.'">Last</a></li>';
+				$r .= '<li><a href="'.$this->get_query(intval($this->s+2)).'">Next</a></li>';
+				$r .= '<li><a href="'.$this->get_query($this->n).'">Last</a></li>';
 			}
-			$r = $this->s > 0 ? '<li><a href="'.$this->url.'&page=1&query='.$q.'&by='.$b.'&type='.$t.'&sort='.$sort.'&order='.$order.'">First</a></li>'.$r : $r;
+			$r = $this->s > 0 ? '<li><a href="'.$this->get_query(1).'">First</a></li>'.$r : $r;
 			$r = '<ul class="tern_pagination">' . $r . '</ul>';
 		}
 		if($z) { echo $r; }
 		return $r;
+	}
+	function get_query($p) {
+		return $this->url.'page='.$p.'&query='.$_GET['query'].'&by='.$_GET['by'].'&type='.$_GET['type'].'&sort='.$this->sort.'&order='.$this->order.'&byradius='.$_GET['byradius'].'&radius='.$_GET['radius'];
 	}
 	function search($e=false) {
 		global $ternSel,$tern_wp_members_fields,$tern_wp_meta_fields;
@@ -303,6 +341,24 @@ class tern_members {
 			<input type="hidden" name="page_id" value="'.$_REQUEST['page_id'].'" />
 			<input type="submit" value="Submit" />
 		</form></div>';
+		if($e) { echo $r; }
+		return $r;
+	}
+	function radius($e=false) {
+		global $ternSel,$tern_wp_members_fields,$tern_wp_meta_fields;
+		$v = empty($_REQUEST['byradius']) ? 'search...' : $_REQUEST['byradius'];
+		$r = '<div class="tern_members_search"><form method="get" action="'.$this->url.'">
+			<label>and search by zipcode:</label>
+			<input type="text" id="byradius" name="byradius" class="blur" value="'.$v.'" />
+			'.$ternSel->create(array(
+						'type'			=>	'select',
+						'data'			=>	array(5,10,25,50,100,250,500),
+						'name'			=>	'radius',
+						'select_value'	=>	'Radius',
+						'selected'		=>	array((int)$_REQUEST['radius'])
+					)).'<input type="hidden" name="p" value="'.$_REQUEST['p'].'" />
+			<input type="submit" value="Submit" />
+		</form></div>';		
 		if($e) { echo $r; }
 		return $r;
 	}
@@ -336,7 +392,7 @@ class tern_members {
 				}
 			}
 			
-			$r .= '<li'.$c.'><a href="'.$this->url.'&query='.urldecode($_GET['query']).'&by='.$_GET['by'].'&type='.$_GET['type'].'&sort='.$v.'&order='.$o.'">'.$k.'</a></li>';
+			$r .= '<li'.$c.'><a href="'.$this->url.'&query='.urldecode($_GET['query']).'&by='.$_GET['by'].'&type='.$_GET['type'].'&sort='.$v.'&order='.$o.'&byradius='.$_GET['byradius'].'&radius='.$_GET['radius'].'">'.$k.'</a></li>';
 		}
 		$r = '<div class="tern_members_sort"><label>Sort by:</label><ul>'.$r.'</ul></div>';
 		if($e) { echo $r; }
@@ -352,7 +408,7 @@ class tern_members {
 			$m = ' whose last names begin with the letter "'.strtoupper($q).'".';
 		}
 		$r = '<div class="tern_members_view">Now viewing <b>' . $v . '</b> through <b>' . $this->e . '</b> of <b>'.$this->total.'</b> '.$o['noun'].' found'.$m;
-		if($a['pagination']) {
+		if($a['pagination'] !== false and $a['pagination'] !== 'false') {
 			$r .= $this->pagination();
 		}
 		$r .= '</div>';
@@ -360,7 +416,7 @@ class tern_members {
 		return $r;
 	}
 	function markup($u) {
-		global $tern_wp_members_defaults;
+		global $tern_wp_members_defaults,$getMap;
 		$o = $this->wp->getOption('tern_wp_members',$tern_wp_members_defaults);
 		$s = '<li>'."\n    ";
 		if($o['gravatars']) {
@@ -371,6 +427,17 @@ class tern_members {
 			if($v['name'] == 'user_email' and $o['hide_email'] and !is_user_logged_in()) {
 				continue;
 			}
+			elseif($v['name'] == 'user_email') {
+				$s .= "\n        <a href='mailto:".$u->$v['name']."'>".str_replace('%value%',$u->$v['name'],$v['markup']).'</a>';
+				continue;
+			}
+			if($v['name'] == 'distance' and !empty($_GET['byradius'])) {
+				$r = $getMap->geoLocate(array('zip'=>$_GET['byradius']));
+				$lat = $r['lat'];
+				$lng = $r['lng'];
+				$distance = (6371 * 2 * asin( sqrt( pow( sin( deg2rad( $lat - $u->_lat ) / 2 ), 2 ) + cos( deg2rad( $lat ) ) * cos( deg2rad( $u->_lat ) ) * pow( sin( deg2rad( $lng - $u->_lng ) / 2 ), 2 ) ) ))/1.609344;
+				$s .= "\n        ".str_replace('%author_url%',get_author_posts_url($u->ID),str_replace('%value%',round($distance).' miles',$v['markup']));
+			}
 			if(!empty($u->$v['name'])) {
 				$s .= "\n        ".str_replace('%author_url%',get_author_posts_url($u->ID),str_replace('%value%',$u->$v['name'],$v['markup']));
 			}
@@ -379,7 +446,7 @@ class tern_members {
 	}
 	function sanitize($s) {
 		// to be used in future updates
-		return $s;
+		return mysql_escape_string($s);
 	}
 	
 }
