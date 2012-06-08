@@ -8,7 +8,7 @@
 ////	Account:
 ////		Added on June 3rd 2010
 ////	Version:
-////		1.0
+////		2.0
 ////
 ////	Written by Matthew Praetzel. Copyright (c) 2010 Matthew Praetzel.
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -215,7 +215,12 @@ class ternXML {
 
 
 	function parse($x,$v=true) {
+
 		$this->value = $v;
+		$this->open = array();
+		$this->parsed = array();
+		$this->opened = array();
+		
 		$this->parser = xml_parser_create();
 		xml_parser_set_option($this->parser,XML_OPTION_CASE_FOLDING,0);
 		xml_parser_set_option($this->parser,XML_OPTION_TARGET_ENCODING,'utf-8');
@@ -225,89 +230,26 @@ class ternXML {
 		xml_set_character_data_handler($this->parser,'parse_item');
 		xml_parse($this->parser,$x,true);
 		xml_parser_free($this->parser);
+		
+		$this->clean_parsed($this->parsed);
 		return $this->parsed;
 	}
+	
 	function parse_open_item($p,$n,$a) {
 		$this->name = $n;
-		$this->set_parsed_attributes($a);
-		$this->set_parsed_parent();
-		$this->set_parsed_offset();
-		$this->open_parsed_item();
-	}
-	function set_parsed_attributes($a) {
-		$this->attr = count($a) > 0 ? $a : false;
-	}
-	function set_parsed_parent() {
-		$this->parsed_parent = '';
-		for($i=0;$i<count($this->open);$i++) {
-			if($this->open[$i]['is_list'] and is_array($this->open[$i+1])) {
-				$this->parsed_parent .= $this->open[$i]['value'] ? '["'.$this->open[$i]['name'].'"]["value"]' : '["'.$this->open[$i]['name'].'"]';
-				$this->parsed_parent .= $this->open[$i+1]['value'] ? '["'.$this->open[$i+1]['name'].'"]['.$this->open[$i]['index'].']["value"]' : '["'.$this->open[$i+1]['name'].'"]['.$this->open[$i]['index'].']';
-				$i++;
-			}
-			else {
-				$this->parsed_parent .=  $this->open[$i]['value'] ? '["'.$this->open[$i]['name'].'"]["value"]' : '["'.$this->open[$i]['name'].'"]';
-			}
-		}
-	}
-	function open_parsed_item() {
-		if($this->parsed_place_exists() and $this->is_parsed_list()) {
-			$this->increment_parent_index();
-		}
-		elseif($this->parsed_place_exists()) {
-			$this->fix_parsed_place();
-		}
-		else {
-			$this->reset_parsed_index();
-		}
-		$this->open[] = array('name'=>$this->name,'index'=>0,'is_list'=>false,'value'=>$this->attr ? true : false);
-		$this->set_parsed_offset();
 		
-		if($this->attr) {
-			eval('$this->parsed'.$this->parsed_offset.' = array("attributes"=>$this->attr,"value"=>"");');
+		$this->attr = count($a) > 0 ? $a : false;
+		
+		$this->is_list = false;
+		if($this->crawl_items('exists')) {
+			$this->is_list = true;
+			$this->crawl_items('fix');
+			$this->crawl_items('add');
+			$this->open[] =  array('name'=>$this->name,'is_list'=>true);
 		}
 		else {
-			eval('$this->parsed'.$this->parsed_offset.' = "";');
-		}
-	}
-	function increment_parent_index() {
-		$this->open[count($this->open)-1]['index']++;
-	}
-	function parsed_place_exists() {
-		eval('$i = isset($this->parsed'.$this->parsed_offset.');');
-		return $i;
-	}
-	function fix_parsed_place() {
-		$this->open[count($this->open)-1]['is_list'] = true;
-		eval('$this->last_parsed = $this->parsed'.$this->parsed_offset.';');
-		eval('$this->parsed'.$this->parsed_offset.' = array($this->last_parsed);');
-		$this->increment_parent_index();
-		$this->is_parsed_list = true;
-	}
-	function is_parsed_list() {
-		if(is_array($this->open[count($this->open)-1]) and $this->open[count($this->open)-1]['is_list']) {
-			$this->is_parsed_list = true;
-			return true;
-		}
-		$this->is_parsed_list = false;
-		return false;
-	}
-	function set_parsed_offset() {
-		if($this->is_parsed_list) {
-			$this->parsed_offset = $this->parsed_offset.'['.$this->get_parsed_index().']';
-		}
-		else {
-			$this->parsed_offset = $this->parsed_parent.'["'.$this->name.'"]';
-		}
-		$this->is_parsed_list = false;
-	}
-	function get_parsed_index() {
-		return $this->open[count($this->open)-2]['index'];
-	}
-	function reset_parsed_index() {
-		if(is_array($this->open[count($this->open)-1])) {
-			$this->open[count($this->open)-1]['index'] = 0;
-			$this->open[count($this->open)-1]['is_list'] = false;
+			$this->crawl_items('add');
+			$this->open[] =  array('name'=>$this->name,'is_list'=>false);
 		}
 	}
 	function parse_item($p,$v) {
@@ -315,15 +257,140 @@ class ternXML {
 		if($this->parsed_value === '' or (empty($this->parsed_value) and $this->parsed_value !== 0 and $this->parsed_value !== '0') or preg_match("/^[\s]+$/",$this->parsed_value)) {
 			return;
 		}
-		if($this->attr) {
-			eval('$this->parsed'.$this->parsed_offset.'["value"] .= "$this->parsed_value";');
-		}
-		else {
-			eval('$this->parsed'.$this->parsed_offset.' .= "$this->parsed_value";');
-		}
+		$this->crawl_items('value');
 	}
 	function parse_close_item($p,$n) {
 		array_pop($this->open);
+	}
+	
+	function crawl_items($n) {
+		$this->count[$n] = 0;
+		return $this->walk_items($this->parsed,$n);
+	}
+	function walk_items(&$item,$n) {
+		$c = $this->count[$n];
+		$name = $this->open[$c]['name'];
+		
+		if($this->open[$c]['is_list']) {
+			$this->count[$n]++;
+			return $this->walk_items($item[$name]['value'][count($item[$name]['value'])-1],$n);
+		}
+		
+		//stop walking
+		if(empty($this->open[$c])) {
+			/*
+			if($this->open[$c-1]['is_list']) {
+				//return $this->perform_on_item($item['value'][count($item['value'])-1],$n);
+			}
+			*/
+			return $this->perform_on_item($item,$n);
+		}
+		
+		$this->count[$n]++;
+		return $this->walk_items($item[$name],$n);
+	}
+	function perform_on_item(&$item,$n) {
+		if($n == 'exists') {
+			return $this->item_exists($item);
+		}
+		if($n == 'fix') {
+			return $this->fix_item($item);
+		}
+		if($n == 'add') {
+			return $this->add_item($item);
+		}
+		if($n == 'value') {
+			return $this->add_value($item);
+		}
+	}
+	
+	function item_exists(&$item) {
+		if(is_array($item) and array_key_exists($this->name,$item)) {
+			return true;
+		}
+		return false;
+	}
+	function fix_item(&$item) {
+		if($this->is_list and ((is_array($item[$this->name]) and !$item[$this->name]['attributes']['list']) or !is_array($item[$this->name]))) {
+			$a = array();
+			if(is_array($item[$this->name]) and $item[$this->name]['attributes']) {
+				$v = $item[$this->name]['value'];
+				$a = $item[$this->name]['attributes'];
+			}
+			else {
+				$v = $item[$this->name];
+				$a = array();
+			}
+
+			$item[$this->name] = array(
+				'attributes'	=>	array_merge($a,array(
+					'list'	=>	true
+				)),
+				'value'			=>	array($v)
+			);
+		}
+		return true;
+	}
+	function add_item(&$item) {
+		if($this->attr) {
+			$v = array('attributes'=>$this->attr,'value'=>array());
+		}
+		else {
+			$v = array();
+		}
+
+		if(is_array($item)) {
+			if($this->is_list) {
+				$item[$this->name]['value'][count($item[$this->name]['value'])] = $v;
+			}
+			else {
+				$item[$this->name] = $v;
+			}
+		}
+		else {
+			$this->parsed[$this->name] = $v;
+		}
+		return true;
+	}
+	function add_value(&$item) {
+		if($item['value']) {
+			$item['value'] = $this->parsed_value;
+		}
+		else {
+			$item = $this->parsed_value;
+		}
+	}
+	function clean_parsed(&$a) {
+		if(is_array($a)) {
+			foreach($a as $k => $v) {
+				if($v['attributes']) {
+					$this->clean_attributes($a[$k]);
+				}
+				if(is_array($v) and count($v) < 1) {
+					$this->clean_value($a[$k]);
+				}
+				$this->clean_parsed($a[$k]);
+			}
+		}
+	}
+	function clean_attributes(&$a) {
+		if(is_array($a) and $a['attributes']) {
+			foreach($a['attributes'] as $k => $v) {
+				if($k == 'list') {
+					unset($a['attributes'][$k]);
+				}
+			}
+			if(count($a['attributes']) < 1) {
+				$this->remove_attributes($a);
+			}
+		}
+	}
+	function remove_attributes(&$a) {
+		unset($a['attributes']);
+		$a = $a['value'];
+	}
+	function clean_value(&$a) {
+		$a = '';
 	}
 
 }

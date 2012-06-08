@@ -1,25 +1,15 @@
 <?php
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-//
-//		File:
-//			file.php
-//		Description:
-//			This class manipulates files and driectories.
-//		Actions:
-//			1) manipulate files
-//			2) read directories
-//		Date:
-//			Added on July 30th 2007 for ternstyle (tm) v2.0.0
-//		Version:
-//			2.3
-//		Copyright:
-//			Copyright (c) 2010 Matthew Praetzel.
-//		License:
-//			This software is licensed under the terms of the GNU Lesser General Public License v3
-//			as published by the Free Software Foundation. You should have received a copy of of
-//			the GNU Lesser General Public License along with this software. In the event that you
-//			have not, please visit: http://www.gnu.org/licenses/gpl-3.0.txt
-//
+////	File:
+////		file.php
+////	Actions:
+////		1) manipulate files
+////	Account:
+////		Added on July 30th 2007 for ternstyle (tm) v2.0.0
+////	Version:
+////		2.3
+////
+////	Written by Matthew Praetzel. Copyright (c) 2007 Matthew Praetzel.
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /****************************************Commence Script*******************************************/
@@ -97,7 +87,8 @@ class fileClass {
 			'dir'	=>	'/',
 			'rec'	=>	false,
 			'flat'	=>	true,
-			'depth'	=>	'*'
+			'depth'	=>	'*',
+			'ext'	=>	false
 		),$b);
 		$b['dir'] = substr($b['dir'],-1) != '/' ? $b['dir'].'/' : $b['dir'];
 		
@@ -106,8 +97,8 @@ class fileClass {
 			if($p = @opendir($b['dir'])) {
 				while(($f = @readdir($p)) !== false) {
 					$n = $b['dir'].$f;
-					if(is_file($n)) {
-						$a[$f] = $n;
+					if(is_file($n) && !$this->is_hidden_file($f) && (!$b['ext'] || $this->is_ext($n,$b['ext']))) {
+						$a[] = $n;
 					}
 					elseif(is_dir($n) and $f != '.' and $f != '..' and $b['rec'] and ($b['depth'] == '*' or $b['depth'] != 1)) {
 						$x = array_merge($b,array('dir'=>$n.'/','depth'=>$b['depth'] !== '*' ? ($b['depth']-1) : $b['depth']));
@@ -122,6 +113,19 @@ class fileClass {
 				closedir($p);
 				return $a;
 			}
+		}
+		return false;
+	}
+	function is_ext($n,$e) {
+		$s = substr($n,strrpos($n,'.')+1);
+		if(in_array($s,$e)) {
+			return true;
+		}
+		return false;
+	}
+	function is_hidden_file($f) {
+		if(substr($f,0,1) == '.') {
+			return true;
 		}
 		return false;
 	}
