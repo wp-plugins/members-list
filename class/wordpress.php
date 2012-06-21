@@ -12,14 +12,13 @@
 //		Date:
 //			Created April 21st, 2009 for Wordpress
 //		Version:
-//			2.0
+//			2.0.3
 //		Copyright:
 //			Copyright (c) 2010 Matthew Praetzel.
 //		License:
-//			This software is licensed under the terms of the GNU Lesser General Public License v3
-//			as published by the Free Software Foundation. You should have received a copy of of
-//			the GNU Lesser General Public License along with this software. In the event that you
-//			have not, please visit: http://www.gnu.org/licenses/gpl-3.0.txt
+//			This software is licensed under the terms of the End User License Agreement (EULA) 
+//			provided with this software. In the event the EULA is not present with this software
+//			or you have not read it, please visit: http://www.ternstyle.us/terncal/license.txt
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -30,11 +29,13 @@
 //////////////////////////////////**                           **///////////////////////////////////
 //                                **                           **                                 //
 //                                *******************************                                 //
+global $getWP;
 if(!class_exists('ternWP')) {
 //
 class ternWP {
 
 	var $errors = array();
+	var $alerts = array();
 
 //                                *******************************                                 //
 //________________________________** OPTIONS                   **_________________________________//
@@ -62,9 +63,12 @@ class ternWP {
 	function updateOption($n,$d,$w) {
 		global $tern_wp_msg;
 		$o = $this->getOption($n,$d);
-		if(wp_verify_nonce($_REQUEST['_wpnonce'],$w) and $_REQUEST['action'] == 'update') {
+		if(wp_verify_nonce($_REQUEST['_wpnonce'],$w) and $_REQUEST['action'] == 'update' and current_user_can('administrator')) {
 			$f = new parseForm('post','_wp_http_referer,_wpnonce,action,submit,page,page_id');
 			foreach($o as $k => $v) {
+				if(is_string($v)) {
+					$f->a[$k] = preg_match("/^[0-9]+$/",$f->a[$k]) ? (int)$f->a[$k] : $f->a[$k];
+				}
 				if(!isset($f->a[$k])) {
 					$f->a[$k] = $v;
 				}
@@ -138,10 +142,22 @@ class ternWP {
 		$this->errors[] = $e;
 	}
 	function renderErrors() {
-		global $notice;
+		//global $notice;
+		$notice = '';
 		foreach($this->errors as $v) {
-			$notice .= empty($notice) ? $v : '<br />'.$v;
+			$notice .= '<p>'.$v.'</p>';
 		}
+		return $notice;
+	}
+	function addAlert($e) {
+		$this->alerts[] = $e;
+	}
+	function renderAlerts() {
+		$notice = '';
+		foreach($this->alerts as $v) {
+			$notice .= '<p>'.$v.'</p>';
+		}
+		return $notice;
 	}
 
 }

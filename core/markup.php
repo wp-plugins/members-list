@@ -61,7 +61,7 @@ function WP_members_list_markup_actions() {
 	global $getWP,$tern_wp_members_defaults,$current_user;
 	get_currentuserinfo();
 	$o = $getWP->getOption('tern_wp_members',$tern_wp_members_defaults);
-	
+
 	if($_REQUEST['page'] == 'members-list-configure-mark-up') {
 		if(wp_verify_nonce($_REQUEST['_wpnonce'],'tern_wp_members_nonce')) {
 			switch($_REQUEST['action']) {
@@ -81,6 +81,7 @@ function WP_members_list_markup_actions() {
 				//add a field
 				case 'add' :
 					$f = $_REQUEST['new_field'];
+					$o['fields'] = is_array($o['fields']) ? $o['fields'] : array();
 					$o['fields'][$f] = array(
 						'name'		=>	$f,
 						'markup'	=>	'<div class="tern_wp_members_'.$f.'">%value%</div>'

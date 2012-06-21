@@ -10,7 +10,7 @@
 //		Date:
 //			Added on March 23rd 2006 for ternstyle (tm) v1.0.0
 //		Version:
-//			5.0.1
+//			5.0.3
 //		Copyright:
 //			Copyright (c) 2011 Matthew Praetzel.
 //		License:
@@ -30,6 +30,10 @@ class select {
 	var $a = array();
 	var $o = '';
 	var $s = '';
+	
+	function __construct() {
+		
+	}
 
 	function create($a=array()) {
 		$this->a = array_merge(array(
@@ -76,7 +80,7 @@ class select {
 	}
 	function multi() {
 		foreach((array)$this->a['data'] as $k => $v) {
-			$s = in_array($v[$this->a['key']],$this->a['selected'],true) ? ' selected ' : '';
+			$s = in_array($v[$this->a['value']],$this->a['selected'],true) ? ' selected ' : '';
 			$this->add_option($v[$this->a['key']],$v[$this->a['value']],$s);
 		}
 	}
@@ -92,6 +96,17 @@ class select {
 			for($i=0;$i<count($v);$i++) {
 				$s = in_array($v[$i][$this->a['value']],$this->a['selected'],true) ? ' selected ' : '';
 				$this->add_option($v[$i][$this->a['key']],$v[$i][$this->a['value']],$s);
+			}
+			$o .= '</optgroup>';
+		}
+	}
+	function tiered_paired() {
+		foreach((array)$this->a['data'] as $k => $v) {
+			$this->o .= '<optgroup label="'.$k.'">';
+			foreach((array)$v as $l => $w) {
+				$s = in_array($w,$this->a['selected'],true) ? ' selected ' : '';
+				$l = empty($l) ? $w : $l;
+				$this->add_option($l,$w,$s);
 			}
 			$o .= '</optgroup>';
 		}

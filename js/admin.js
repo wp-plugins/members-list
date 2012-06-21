@@ -49,7 +49,7 @@
 					}
 					$('#tern_wp_message').html(m);
 				},
-				error : function (m) {alert('):'+m);
+				error : function (m) {
 					$('#tern_wp_message').html('There was an error while processing your request. Please try again.');
 				}
 			});
