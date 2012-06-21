@@ -95,7 +95,8 @@ class tern_members {
 		return $r;
 	}
 	function scope() {
-		$this->p = empty($_GET['page']) ? 1 : $_GET['page'];
+		$this->p = get_query_var('page');
+		$this->p = empty($this->p) ? 1 : $this->p;
 		$this->n = ceil($this->total/$this->num);
 		$this->s = intval($this->p-1);
 		if(empty($this->s)) {
