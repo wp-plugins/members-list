@@ -6,7 +6,7 @@ Description: List your members with pagination and search capabilities.
 Author: Matthew Praetzel
 Version: 1.6
 Author URI: http://www.ternstyle.us/
-Licensing : http://www.ternstyle.us/readme.html
+Licensing : http://www.gnu.org/licenses/gpl-3.0.txt
 */
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
